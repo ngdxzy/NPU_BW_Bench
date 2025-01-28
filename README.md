@@ -17,4 +17,16 @@ make kernel
 It will generate kernel_name.o.
 
 # Bitstream
+
+```
+make bitstream
+```
+
+It will generate xclbin file.
+
 # Instruction
+```
+make instructions
+```
+
+It will generate txt file.
