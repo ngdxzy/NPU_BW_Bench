@@ -7,7 +7,6 @@
 #include <aie_api/aie.hpp>
 
 #include "zero.h"
-#include "passThrough_aie.h"
 
 
 template <typename T, typename T_out, typename T_acc, unsigned m, unsigned k, unsigned r>
