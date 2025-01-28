@@ -12,18 +12,27 @@
 #include <iostream>
 #include <sstream>
 #include <stdfloat>
+#include "debug_utils.hpp"
+#include "xrt/xrt_bo.h"
+#include "xrt/xrt_kernel.h"
+#include "xrt/xrt_device.h"
+/*
+This is a vector wrapper that allows a vector like object that can be mapped to a bo_buffer
 
+*/
 template<typename T>
 class vector {
 private:
     T* data_;
     size_t size_;
     bool is_owner_;
+    bool is_bo_owner_;
+    xrt::bo* bo_;
 
 public:
     // Constructor from a pointer range
     // If copy is true, the vector owns the data
-    vector(T* start, T* end, bool copy = true) : data_(start), size_(end - start), is_owner_(copy) {
+    vector(T* start, T* end, bool copy = true) : data_(start), size_(end - start), is_owner_(copy), is_bo_owner_(false), bo_(nullptr) {
         if (copy) {
             data_ = new T[size_];
             memcpy(data_, start, size_ * sizeof(T));
@@ -34,10 +43,22 @@ public:
             is_owner_ = false;
         }
     }
+    // ********************** Constructors **********************
+    // Constructor from a bo
+    vector(xrt::bo& bo) : data_(bo.map<T*>()), size_(bo.size() / sizeof(T)), is_owner_(false), is_bo_owner_(false), bo_(&bo) {
+        LOG_VERBOSE(3, "Vector created from bo");
+    }
+
+    // Constructor from create_bo_vector
+    vector(size_t size, xrt::device& device, xrt::kernel& kernel, int group_id) : size_(size), is_owner_(false), is_bo_owner_(true) {
+        bo_ = new xrt::bo(device, size * sizeof(T), XRT_BO_FLAGS_HOST_ONLY, kernel.group_id(group_id));
+        data_ = bo_->map<T*>();
+        LOG_VERBOSE(3, "Vector created together with bo");
+    }
 
     // Constructor from a std::vector
     // If copy is true, the vector owns the data
-    vector(std::vector<T> vec, bool copy = true) : data_(vec.data()), size_(vec.size()), is_owner_(copy) {
+    vector(std::vector<T> vec, bool copy = true) : data_(vec.data()), size_(vec.size()), is_owner_(copy), is_bo_owner_(false), bo_(nullptr) {
         if (copy) {
             data_ = new T[size_];
             memcpy(data_, vec.data(), size_ * sizeof(T));
@@ -48,41 +69,20 @@ public:
         }
     }
 
+    // Constructor from a size
+    // The vector owns the data
+    vector(size_t size) : data_(new T[size]), size_(size), is_owner_(true), is_bo_owner_(false), bo_(nullptr) {}
+
     // Constructor to initialize with size and value
-    vector(size_t size, const T& value) : data_(new T[size]), size_(size), is_owner_(true) {
+    vector(size_t size, const T& value) : data_(new T[size]), size_(size), is_owner_(true), is_bo_owner_(false), bo_(nullptr) {
         for (size_t i = 0; i < size; i++) {
             data_[i] = value;
         }
     }
 
-
-    vector(size_t size, const double & value) : data_(new T[size]), size_(size), is_owner_(true) {
-        for (size_t i = 0; i < size; i++) {
-            data_[i] = (T)value;
-        }
-    }
-
-    vector(size_t size, const float & value) : data_(new T[size]), size_(size), is_owner_(true) {
-        for (size_t i = 0; i < size; i++) {
-            data_[i] = (T)value;
-        }
-    }
-
-    // Copy constructor
-    vector(const vector<T>& other) : data_(other.data_), size_(other.size_), is_owner_(false) {
-    }
-
-    // Constructor from a size
-    // The vector owns the data
-    vector(size_t size) : data_(new T[size]), size_(size), is_owner_(true) {}
-
-    // Constructor from another vector
-    // The vector does not own the data
-    vector(vector<T>& vec) : data_(vec.data()), size_(vec.size()), is_owner_(false) {}
-
     // Constructor from a pointer range
     // If copy is true, the vector owns the data
-    vector(T* data, size_t size, bool copy = true) : data_(data), size_(size), is_owner_(copy) {
+    vector(T* data, size_t size, bool copy = true) : data_(data), size_(size), is_owner_(copy), is_bo_owner_(false), bo_(nullptr) {
         if (copy) {
             data_ = new T[size];
             memcpy(data_, data, size * sizeof(T));
@@ -90,39 +90,13 @@ public:
         else{
             data_ = data;
             size_ = size;
-            is_owner_ = false;
         }
     }
 
     // Default constructor
     // The vector does not own the data
-    vector() : data_(nullptr), size_(0), is_owner_(false) {}
+    vector() : data_(nullptr), size_(0), is_owner_(false), is_bo_owner_(false), bo_(nullptr) {}
 
-    // Constructor from a file
-    // The vector owns the data
-    // The vector size is set to the file size / sizeof(T)
-    vector(const std::string& filename) {
-        std::ifstream file(filename, std::ios::in | std::ios::binary);
-
-        // Check if the file was successfully opened
-        if (!file.is_open()) {
-            throw std::ios_base::failure("Failed to open file " + filename);
-        }
-        // Move to the end of the file
-        file.seekg(0, std::ios::end);
-
-        // Get the position, which is the file size
-        std::size_t fileSize = file.tellg();
-
-        // Return the file pointer to the beginning (optional, if needed later)
-        file.seekg(0, std::ios::beg);
-
-        size_ = fileSize / sizeof(T);
-        data_ = new T[size_];
-        is_owner_ = true;
-        file.read(reinterpret_cast<char*>(data_), size_ * sizeof(T));
-        file.close();
-    }
 
     // Destructor
     ~vector() {
@@ -133,10 +107,19 @@ public:
                 data_ = nullptr;
             }
         }
+        if (is_bo_owner_){
+            delete bo_;
+        }
     }
 
+    // ********************** Accessors **********************
     bool is_owner() const { return is_owner_; }
-
+    bool is_bo_owner() const { return is_bo_owner_; }
+    size_t size() const { return size_; }
+    size_t size_bytes() const { return size_ * sizeof(T); }
+    T* data() const { return data_; }
+    T* begin() const { return data_; }
+    T* end() const { return data_ + size_; }
     // Access operator
     T& operator[](size_t index) {
         assert(this->data_ != nullptr);
@@ -154,24 +137,36 @@ public:
     // Assignment operator
     // The vector does not own the data, pointer is copied
     vector<T>& operator=(const vector<T>& vec) {
+        assert(is_bo_owner_ == false);
         if (is_owner_) {
             delete[] data_;
         }
         data_ = vec.data_;
         size_ = vec.size_;
         is_owner_ = false;
+        bo_ = vec.bo_;
+        is_bo_owner_ = vec.is_bo_owner_;
         return *this;
     }
 
-    size_t size() const { return size_; }
-    size_t size_bytes() const { return size_ * sizeof(T); }
-    T* data() const { return data_; }
-    T* begin() const { return data_; }
-    T* end() const { return data_ + size_; }
+
+    // Remap the vector to a bo
+    // If size is -1, the vector size is set to the size of the new pointer
+    void remap(xrt::bo& bo) {
+        assert(is_bo_owner_ == false);
+        if (is_owner_) {
+            delete[] data_;
+        }
+        data_ = bo.map<T*>();
+        size_ = bo.size() / sizeof(T);
+        is_owner_ = false;
+        bo_ = &bo;
+    }
 
     // Remap the vector to a new pointer
     // If size is -1, the vector size is set to the size of the new pointer
     void remap(T* ptr, size_t size = -1) {
+        assert(is_bo_owner_ == false);
         if (is_owner_) {
             delete[] data_;
         }
@@ -188,6 +183,7 @@ public:
         assert(this->data_ != nullptr);
         memcpy(data_, vec.data(), size_ * sizeof(T));
     }
+    
     // Deep copy from a pointer
     void copy_from(T* p) {
         assert(this->data_ != nullptr);
@@ -200,6 +196,7 @@ public:
     }
 
     void resize(size_t size){
+        assert(is_bo_owner_ == false);
         if (is_owner_){
             delete[] data_;
         }
@@ -224,6 +221,7 @@ public:
     // The vector size is set to the new size (in elements)
     void from_file(const std::string& filename, size_t size) {
         assert(this->data_ != nullptr);
+        LOG_VERBOSE(3, "Opening file: " << filename);
         size_ = size;
         std::ifstream file(filename, std::ios::in | std::ios::binary);
         if (!file.is_open()) {
@@ -239,6 +237,7 @@ public:
     // The file is read from the offset (in elements)
     void from_file(const std::string& filename, size_t size, size_t offset) {
         assert(this->data_ != nullptr);
+        LOG_VERBOSE(3, "Opening file: " << filename);
         size_ = size;
         std::ifstream file(filename, std::ios::in | std::ios::binary);
         if (!file.is_open()) {
@@ -250,6 +249,7 @@ public:
     }
 
     void acquire(int size){
+        assert(is_bo_owner_ == false);
         if (is_owner_){
             delete[] data_;
         }
@@ -259,6 +259,7 @@ public:
     }
 
     void release(){
+        assert(is_bo_owner_ == false);
         if (is_owner_){
             delete[] data_;
         }
@@ -274,6 +275,22 @@ public:
         }
     }
 
+    xrt::bo& bo() const { assert(bo_ != nullptr); return *bo_; }
+
+    void sync_to_device(){
+        assert(bo_ != nullptr);
+        bo_->sync(XCL_BO_SYNC_BO_TO_DEVICE);
+    }
+
+    void sync_from_device(){
+        assert(bo_ != nullptr);
+        bo_->sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+    }
+    
+    // dummy function to sync from device
+    void sync_to_host(){
+        sync_from_device();
+    }
 };
 
 #endif

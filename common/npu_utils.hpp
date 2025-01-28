@@ -15,13 +15,19 @@
 #include <iostream>
 #include <sstream>
 #include <stdfloat>
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <linux/types.h>
+#include <drm/drm.h>
+#include <stdfloat>
 #include "xrt/xrt_bo.h"
 #include "xrt/xrt_device.h"
 #include "xrt/xrt_kernel.h"
-#include "typedef.hpp"
-// usage: std::vector<int, AlignedAllocator<int>> vec;
-
+#include "amdxdna_accel.h"
 #include "vector_view.hpp"
+#include "debug_utils.hpp"
 
 // Accelerator description
 // There should be only one npu_app inside main.
@@ -83,25 +89,23 @@ private:
     // the only device instance
     xrt::device device;
 public:
-    // xrt::xclbin xclbin;
-    // xrt::kernel kernel;
-    // std::vector<xrt::bo> bo_instrs;
-    // xrt::hw_context context;
-    // int loaded_instr_count;
-    // size_t instr_size;
-    npu_app(int max_xclbins = 10, int max_instrs = 100, unsigned int device_id = 0U);
+    npu_app(int max_xclbins = 1, int max_instrs = 1, unsigned int device_id = 0U);
 
     int register_accel_app(accel_user_desc& user_desc);
     ~npu_app();
     int _load_instr_sequence(accel_user_desc& user_desc, accel_hw_desc& hw_desc);
     int _load_xclbin(std::string xclbin_name);
     xrt::bo create_buffer(size_t size, int group_id, int app_id);
+    template<typename T>
+    vector<T> create_bo_vector(size_t size, int group_id, int app_id);
 
     ert_cmd_state run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, xrt::bo& Out1, int app_id = 0);
     ert_cmd_state run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, int app_id = 0);
     ert_cmd_state run(xrt::bo& In0, xrt::bo& Out0, int app_id = 0);
-
     void list_kernels();
+    void write_out_trace(char *traceOutPtr, size_t trace_size, std::string path);
+    void print_npu_info();
+    float get_npu_power(bool print = true);
 };
 
 #endif
