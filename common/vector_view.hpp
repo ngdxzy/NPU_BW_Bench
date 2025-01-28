@@ -115,6 +115,9 @@ public:
     // ********************** Accessors **********************
     bool is_owner() const { return is_owner_; }
     bool is_bo_owner() const { return is_bo_owner_; }
+
+    xrt::bo& bo() const { assert(bo_ != nullptr); return *bo_; }
+
     size_t size() const { return size_; }
     size_t size_bytes() const { return size_ * sizeof(T); }
     T* data() const { return data_; }
@@ -183,7 +186,7 @@ public:
         assert(this->data_ != nullptr);
         memcpy(data_, vec.data(), size_ * sizeof(T));
     }
-    
+
     // Deep copy from a pointer
     void copy_from(T* p) {
         assert(this->data_ != nullptr);
@@ -274,8 +277,6 @@ public:
             data_[i] = value;
         }
     }
-
-    xrt::bo& bo() const { assert(bo_ != nullptr); return *bo_; }
 
     void sync_to_device(){
         assert(bo_ != nullptr);

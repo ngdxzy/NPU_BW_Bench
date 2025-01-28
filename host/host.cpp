@@ -70,7 +70,7 @@ int main(int argc, const char *argv[]) {
         x[i] = utils::getRandInt(-10, 10);
     }
  
-    header_print("info", "Calculate ref");
+    header_print("info", "Calculate ref" << M << "x" << K << "x" << N);
     vector<dtype_out> y_ref(Y_VOLUME);    
     linear(y_ref, w, x);
 
@@ -78,12 +78,12 @@ int main(int argc, const char *argv[]) {
     x.sync_to_device();
 
     header_print("info", "Running kernel");
-    float npu_time = 0.0;
+    time_utils::time_with_unit npu_time = {0.0, "us"};
     for (int i = 0; i < 100; i++) {
 	    time_utils::time_point start = time_utils::now();
 	    npu_instance.run(w.bo(), x.bo(), y.bo(), app_id);
 	    time_utils::time_point stop = time_utils::now();
-	    npu_time += time_utils::duration_us(start, stop).first;
+	    npu_time.first += time_utils::duration_us(start, stop).first;
     }
 
     y.sync_from_device();  
