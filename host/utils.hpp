@@ -1,135 +1,174 @@
 #ifndef __UTILS_H__
 #define __UTILS_H__
-#include "common.hpp"
 #include "typedef.hpp"
+#include "debug_utils.hpp"
+#include <chrono>
 
 
-float getRand(){
-    return (float)(rand() % 1000) / 500.0 - 1;
+#define header_print(header, msg) \
+    do { \
+        std::ostringstream oss; \
+        oss << msg; \
+        std::cout << '[' << header << "]  " << oss.str() << std::endl; \
+    } while (0)
+
+namespace time_utils {
+
+typedef std::chrono::high_resolution_clock::time_point time_point;
+typedef std::pair<float, std::string> time_with_unit;
+
+time_point now(){
+    return std::chrono::high_resolution_clock::now();
 }
 
-template<typename T>
-void transpose(T* A, T* B, int Ma, int Na) 
-{ 
-    // A: M N
-    // B: N M
-    int n, m; 
-    for (n = 0; n < Na; n++) 
-        for (m = 0; m < Ma; m++) 
-           // B[n][m] = A[m][n]; 
-           B[n * Ma + m] = A[m * Na + n];
-} 
+time_with_unit duration_us(time_point start, time_point stop){
+    return std::make_pair(std::chrono::duration_cast<std::chrono::microseconds>(stop - start).count(), "us");
+}
 
+time_with_unit duration_ms(time_point start, time_point stop){
+    return std::make_pair(std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count(), "ms");
+}
 
-void init_A(A_DATATYPE* AVec, bool random){
-    for (int i = 0; i < M * K; i++) {
-        AVec[i] =  20 * getRand() / K; 
-        if (random){
-            continue;
-        }
+time_with_unit duration_s(time_point start, time_point stop){
+    return std::make_pair(std::chrono::duration_cast<std::chrono::seconds>(stop - start).count(), "s");
+}
 
-        int m = i / K;
-        m =  m %  K;
-        int k = i % K;
+time_with_unit re_unit(float time_in_us){
+    std::string time_unit = "us";
+    float time = time_in_us;
+    if (time_in_us > 1000){
+        time /= 1000;
+        time_unit = "ms";
+    }
+    if (time_in_us > 1000000){
+        time /= 1000000;
+        time_unit = "s";
+    }
+    return std::make_pair(time, time_unit);
+}
 
-        if (m == k){
-            AVec[i] = 1;
-        }
-        else{
-            AVec[i] = 0.000;
-        }
+time_with_unit cast_to_us(time_with_unit time){
+    if (time.second == "us"){
+        return time;
+    }
+    if (time.second == "ms"){
+        return std::make_pair(time.first * 1000, "us");
+    }
+    if (time.second == "s"){
+        return std::make_pair(time.first * 1000000, "us");
+    }
+    else{
+        return time;
     }
 }
 
-void init_B(B_DATATYPE* BVec, bool random){
-    for (int k = 0; k < K; k++) {
-        for (int n = 0; n < N; n++) {
-            if (random){
-                BVec[k * N + n] = 1 * getRand() ;
-            }
-            else{
-                BVec[k * N + n] = n + 1 + (k + 1) / 10.0;
-            }
-        }
+time_with_unit cast_to_ms(time_with_unit time){
+    if (time.second == "ms"){
+        return time;
     }
+    if (time.second == "us"){
+        return std::make_pair(time.first / 1000, "ms");
+    }
+    if (time.second == "s"){
+        return std::make_pair(time.first / 1000000, "ms");
+    }
+    else{
+        return time;
+    }
+}   
+
+time_with_unit cast_to_s(time_with_unit time){
+    if (time.second == "s"){
+        return time;
+    }
+    if (time.second == "us"){
+        return std::make_pair(time.first / 1000000, "s");
+    }
+    if (time.second == "ms"){
+        return std::make_pair(time.first / 1000, "s");
+    }
+    else{
+        return time;
+    }
+}   
+
 }
 
-void load_W(C_DATATYPE* bufA, A_DATATYPE* AVec){
-// Hardware read A for each CT, each CT read M_PER_CT * K_TILE
-    memcpy(bufA, AVec, M * K * sizeof(A_DATATYPE));
-    return;
-    for (int mt = 0; mt < M / M_PER_CT / CT_ROW; mt++){
-        for (int kt = 0; kt < K / K_TILE; kt++){
-            for (int ct = 0; ct < CT_ROW; ct++){
-                for (int c = 0; c < K_TILE / 8; c++){
-                    for (int m = 0; m < M_PER_CT; m++){
-                        A_DATATYPE *p = AVec + (mt * M_PER_CT * CT_ROW + ct * M_PER_CT + m) * K + kt * K_TILE + c * 8;
-                        memcpy(bufA, p, 8 * sizeof(A_DATATYPE));
-                        bufA += 8;
-                    } 
-                }
-            }
-        }
-    }
-    // for (int ct = 0; ct < CT_ROW; ct++){
-    //         // for each tile of A
-    //         for (int c = 0; c < K_TILE / 8; c++){
-    //             for (int m = 0; m < M_PER_ROUND; m++){
-    //                 A_DATATYPE *p = AVec + mt * M_PER_ROUND * K + c * 8 + m * K;
-    //                 memcpy(bufA, p, 16);
-    //                 bufA += 8;
-    //             }
-    //         }
-    //     }
-    // }
+namespace utils {
+float getRand(float min = 0, float max = 1){
+    return (float)(rand()) / (float)(RAND_MAX) * (max - min) + min;
 }
 
-void load_X(B_DATATYPE* bufB, B_DATATYPE* B_f){
-// Concat three X vectors;
-// Very slow opertions, need 
-    int k_tiles = K / K_TILE;
-    int chunk_size = 8 * K_CHUNK;
-    int strides = N_TILE / 8;
-    int chunks = K_TILE / K_CHUNK;
-
-    transpose(B_f, bufB, K, N);
-    return;
-// 
-    int i = 0;
-    for (int nt = 0; nt < N / N_TILE; nt++){
-        for (int kt = 0; kt < k_tiles; kt++){
-            int row_offset = kt * K_TILE;
-            for (int s = 0; s < strides; s++){
-                for (int c = 0; c < chunks; c++){
-                    // Part 1: Bf
-                    for (int row = 0; row < K_CHUNK; row++){
-                        int rr = c * K_CHUNK + row + row_offset;
-                        int cc = (nt * strides + s) * 8;
-                        B_DATATYPE* p = B_f + rr * N + cc;
-                        memcpy(bufB, p, 8 * sizeof(B_DATATYPE));
-                        bufB += 8;
-                    }
-                }
-            }
-        }
-    }
+int getRandInt(int min = 0, int max = 6){
+    return (int)(rand()) % (max - min) + min;
 }
 
-void read_Y(C_DATATYPE* bufC, C_DATATYPE* CVec){
-    memcpy(CVec, bufC, M * N * sizeof(C_DATATYPE));
-    return;
-    int i = 0;
-    for (int nt = 0; nt < N / N_TILE; nt++){
-        for (int mt = 0; mt < M / M_PER_CT; mt++){
-            for (int m = 0; m < M_PER_CT; m++){
-                memcpy(CVec + (mt * M_PER_CT + m) * N + nt * N_TILE, bufC, N_TILE * sizeof(A_DATATYPE));
-                bufC += N_TILE;
-                // for (int n = 0; n < N; n++){
-                //     CVec[(mt * M_PER_ROUND + m) * N + n] = bufC[i++];
-                // }
-            }
-        }
-    }
+void print_progress_bar(std::ostream &os, double progress, int len = 75) {
+    os  << "\r" << std::string((int)(progress * len), '|')
+        << std::string(len - (int)(progress * len), ' ') << std::setw(4)
+        << std::fixed << std::setprecision(0) << progress * 100 << "%"
+        << "\r";
 }
 
+void check_arg_file_exists(std::string name) {
+    // Attempt to open the file
+    std::ifstream file(name);
+
+    // Check if the file was successfully opened
+    if (!file) {
+        throw std::runtime_error("Error: File '" + name + "' does not exist or cannot be opened.");
+    }
+
+    // Optionally, close the file (not strictly necessary, as ifstream will close on destruction)
+    file.close();
+}
+
+template <typename T>
+int compare_vectors(vector<T>& y, vector<T>& y_ref, int print_errors = 16){
+    int total_errors = 0;
+    for (int i = 0; i < y.size(); i++){
+        if (y[i] != y_ref[i]){
+            if (total_errors < print_errors){
+                std::cout << "Error: y[" << i << "] = " << y[i] << " != y_ref[" << i << "] = " << y_ref[i] << std::endl;
+            }
+            total_errors++;
+        }
+    }
+    return total_errors;
+}
+
+void print_npu_profile(float npu_time_in_us, float op){
+    std::pair<float, std::string> time_united = time_utils::re_unit(npu_time_in_us);
+
+    float ops = op / (npu_time_in_us / 1000000);
+    float speed = ops / 1000000;
+    std::string ops_unit = "Mops";
+    std::string speed_unit = "Mops/s";
+    if (speed > 1000){
+        speed /= 1000;
+        speed_unit = "Gops/s";
+    }
+    if (speed > 1000000){
+        speed /= 1000000;
+        speed_unit = "Tops/s";
+    }
+    MSG_BONDLINE(40);
+    MSG_BOX_LINE(40, "NPU time : " << time_united.first << " " << time_united.second);
+    MSG_BOX_LINE(40, "NPU speed: " << speed << " " << speed_unit);
+    MSG_BONDLINE(40);
+}
+
+void box_print(std::string msg, int width = 40){
+    MSG_BOX(width, msg);
+}
+
+void box_print_bound(int width = 40){
+    MSG_BONDLINE(width);
+}
+
+void box_print_line(std::string msg, int width = 40){
+    MSG_BOX_LINE(width, msg);
+}
+
+}
 #endif

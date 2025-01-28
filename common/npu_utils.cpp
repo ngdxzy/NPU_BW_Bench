@@ -20,6 +20,11 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
             break;
         }
     }
+    LOG_VERBOSE_IF_ELSE(1, xclbin_id > -1, 
+        "Found xclbin: " << user_desc.xclbin_name << "registered as id " << xclbin_id << "!",
+        "Xclbin: " << user_desc.xclbin_name << " not registered yet!"
+    );
+
     if (xclbin_id == -1){ // the xclbin is not registered yet
         if (this->kernel_desc_count >= this->kernel_descs.size()){
             throw std::runtime_error("Max number of xclbins reached");
@@ -30,6 +35,8 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
         }
         this->registered_xclbin_names.push_back(user_desc.xclbin_name);
         xclbin_id = this->registered_xclbin_names.size() - 1;
+        LOG_VERBOSE(1, "Xclbin: " << user_desc.xclbin_name << " registered as id " << xclbin_id << "!");
+        this->kernel_desc_count++;
     }
     // register the instr
     int app_id = -1;
@@ -39,6 +46,10 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
             break;
         }
     }
+    LOG_VERBOSE_IF_ELSE(1, app_id > -1, 
+        "Found instruction: " << user_desc.instr_name << "registered as id " << app_id << "!",
+        "Instruction: " << user_desc.instr_name << " not registered yet!"
+    );
     if (app_id == -1){ // instr is not registered yet
         if (this->hw_desc_count >= this->hw_descs.size()){
             throw std::runtime_error("Max number of instructions reached");
@@ -46,6 +57,7 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
         this->hw_descs[this->hw_desc_count].kernel_desc = &(this->kernel_descs[xclbin_id]);
         _load_instr_sequence(user_desc, this->hw_descs[this->hw_desc_count]);
         app_id = this->hw_desc_count;
+        LOG_VERBOSE(1, "Instruction: " << user_desc.instr_name << " registered as id " << app_id << "!");
         this->hw_desc_count++;
     }
     return app_id;
@@ -53,6 +65,7 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
 
 
 int npu_app::_load_instr_sequence(accel_user_desc& user_desc, accel_hw_desc& hw_desc){
+    LOG_VERBOSE(1, "Loading instruction sequence: " << user_desc.instr_name);
     std::ifstream instr_file(user_desc.instr_name);
     hw_desc.instr_name = user_desc.instr_name;
     std::string line;
@@ -70,63 +83,78 @@ int npu_app::_load_instr_sequence(accel_user_desc& user_desc, accel_hw_desc& hw_
     memcpy(bufInstr, instr_v.data(), instr_v.size() * sizeof(int));
     hw_desc.bo_instr.sync(XCL_BO_SYNC_BO_TO_DEVICE);
     hw_desc.instr_size = instr_v.size();
+    LOG_VERBOSE(1, "Instruction sequence loaded successfully!");
     return 0;
 }
 
 
 int npu_app::_load_xclbin(std::string xclbin_name){
+    LOG_VERBOSE(1, "Loading xclbin: " << xclbin_name);
     this->kernel_descs[this->kernel_desc_count].xclbin = xrt::xclbin(xclbin_name);
-    int verbosity = 0;
+    // int verbosity = VERBOSE;
     std::string Node = "MLIR_AIE";
     auto xkernels = this->kernel_descs[this->kernel_desc_count].xclbin.get_kernels();
     auto xkernel = *std::find_if(
         xkernels.begin(), 
         xkernels.end(),
-        [Node, verbosity](xrt::xclbin::kernel &k) {
+        [Node](xrt::xclbin::kernel &k) {
             auto name = k.get_name();
-            if (verbosity >= 1) {
-            std::cout << "Name: " << name << std::endl;
-            }
             return name.rfind(Node, 0) == 0;
         }
     );
     this->device.register_xclbin(this->kernel_descs[this->kernel_desc_count].xclbin);
-    // std::cout << "Registering xclbin: " << xclbin_name << "\n";
     auto kernelName = xkernel.get_name();
     this->kernel_descs[this->kernel_desc_count].context = xrt::hw_context(this->device, this->kernel_descs[this->kernel_desc_count].xclbin.get_uuid());
     this->kernel_descs[this->kernel_desc_count].kernel = xrt::kernel(this->kernel_descs[this->kernel_desc_count].context, kernelName);
     this->kernel_desc_count++;
+    LOG_VERBOSE(1, "Xclbin: " << xclbin_name << " loaded successfully!");
     return 0;
 }
 
 xrt::bo npu_app::create_buffer(size_t size, int group_id, int app_id){
-    // std::cout << "Group ID: " << (group_id) << std::endl;
+    LOG_VERBOSE(1, "Creating buffer with size: " << size << " and group_id: " << group_id << " and app_id: " << app_id);
     if (app_id >= this->hw_descs.size()){
         throw std::runtime_error("App ID is out of range");
     }
     return xrt::bo(this->device, size, XRT_BO_FLAGS_HOST_ONLY, this->hw_descs[app_id].kernel_desc->kernel.group_id(group_id));
 }
 
+template<typename T>
+vector<T> npu_app::create_bo_vector(size_t size, int group_id, int app_id){
+    LOG_VERBOSE(1, "Creating buffer vector with size: " << size << " and group_id: " << group_id << " and app_id: " << app_id);
+    return vector<T>(size, this->device, this->hw_descs[app_id].kernel_desc->kernel, group_id);
+}
+
+template vector<float> npu_app::create_bo_vector<float>(size_t size, int group_id, int app_id);
+template vector<uint32_t> npu_app::create_bo_vector<uint32_t>(size_t size, int group_id, int app_id);
+template vector<int32_t> npu_app::create_bo_vector<int32_t>(size_t size, int group_id, int app_id);
+template vector<int8_t> npu_app::create_bo_vector<int8_t>(size_t size, int group_id, int app_id);
+template vector<std::bfloat16_t> npu_app::create_bo_vector<std::bfloat16_t>(size_t size, int group_id, int app_id);
+
 ert_cmd_state npu_app::run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, xrt::bo& Out1, int app_id){
     unsigned int opcode = 3;
+    LOG_VERBOSE(2, "Running kernel with app_id: " << app_id);
     auto run = this->hw_descs[app_id].kernel_desc->kernel(opcode, this->hw_descs[app_id].bo_instr, this->hw_descs[app_id].instr_size, In0, In1, Out0, Out1);
     ert_cmd_state r = run.wait();
+    LOG_VERBOSE(2, "Kernel run finished with status: " << r);
     return r;
 }
 
 ert_cmd_state npu_app::run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, int app_id){
     unsigned int opcode = 3;
+    LOG_VERBOSE(2, "Running kernel with app_id: " << app_id);
     auto run = this->hw_descs[app_id].kernel_desc->kernel(opcode, this->hw_descs[app_id].bo_instr, this->hw_descs[app_id].instr_size, In0, In1, Out0);
-
     ert_cmd_state r = run.wait();
+    LOG_VERBOSE(2, "Kernel run finished with status: " << r);
     return r;
 }
 
 ert_cmd_state npu_app::run(xrt::bo& In0, xrt::bo& Out0, int app_id){
     unsigned int opcode = 3;
+    LOG_VERBOSE(2, "Running kernel with app_id: " << app_id);
     auto run = this->hw_descs[app_id].kernel_desc->kernel(opcode, this->hw_descs[app_id].bo_instr, this->hw_descs[app_id].instr_size, In0, Out0);
-
     ert_cmd_state r = run.wait();
+    LOG_VERBOSE(2, "Kernel run finished with status: " << r);
     return r;
 }
 
@@ -146,4 +174,106 @@ void npu_app::list_kernels(){
     for (int i = 0; i < this->kernel_descs.size(); i++){
         std::cout << "Xclbin: " << &this->kernel_descs[i].xclbin << std::endl;
     }
+}
+
+void npu_app::write_out_trace(char *traceOutPtr, size_t trace_size, std::string path) {
+  std::ofstream fout(path);
+  LOG_VERBOSE(1, "Writing out trace to: " << path);
+  uint32_t *traceOut = (uint32_t *)traceOutPtr;
+  for (int i = 0; i < trace_size / sizeof(traceOut[0]); i++) {
+    fout << std::setfill('0') << std::setw(8) << std::hex << (int)traceOut[i];
+    fout << std::endl;
+  }
+  fout.close();
+  LOG_VERBOSE(1, "Trace written successfully!");
+}
+
+void npu_app::print_npu_info(){
+    int fd = open("/dev/accel/accel0", O_RDWR);
+    if (fd < 0) {
+        perror("Failed to open amdgpu device");
+        return;
+    }
+    amdxdna_drm_query_clock_metadata query_clock_metadata;
+    amdxdna_drm_get_info get_info = {
+        .param = DRM_AMDXDNA_QUERY_CLOCK_METADATA,
+        .buffer_size = sizeof(amdxdna_drm_query_clock_metadata),
+        .buffer = (unsigned long)&query_clock_metadata,
+    };
+    int ret = ioctl(fd, DRM_IOCTL_AMDXDNA_GET_INFO, &get_info);
+    if (ret < 0) {
+        std::cout << "Error code: " << ret << std::endl;
+        perror("Failed to get telemetry information");
+        close(fd);
+        return;
+    }
+
+    amdxdna_drm_query_aie_metadata query_aie_metadata;
+    get_info.param = DRM_AMDXDNA_QUERY_AIE_METADATA;
+    get_info.buffer_size = sizeof(amdxdna_drm_query_aie_metadata);
+    get_info.buffer = (unsigned long)&query_aie_metadata;
+    ret = ioctl(fd, DRM_IOCTL_AMDXDNA_GET_INFO, &get_info);
+    if (ret < 0) {
+        std::cout << "Error code: " << ret << std::endl;
+        perror("Failed to get telemetry information");
+        close(fd);
+        return;
+    }
+
+    close(fd);
+    MSG_BONDLINE(40);
+    MSG_BOX_LINE(40, "NPU version: " << query_aie_metadata.version.major << "." << query_aie_metadata.version.minor);
+    MSG_BOX_LINE(40, "MP-NPU clock frequency: " << query_clock_metadata.mp_npu_clock.freq_mhz << " MHz");
+    MSG_BOX_LINE(40, "H clock frequency: " << query_clock_metadata.h_clock.freq_mhz << " MHz");
+    // What is the meaning of the column size?
+    // std::cout << "NPU column size: " << query_aie_metadata.col_size << std::endl;
+    MSG_BOX_LINE(40, "NPU column count: " << query_aie_metadata.cols);
+    MSG_BOX_LINE(40, "NPU row count: " << query_aie_metadata.rows);
+    MSG_BOX_LINE(40, "NPU core Info: ");
+    MSG_BOX_LINE(40, "--Row count: " << query_aie_metadata.core.row_count);
+    MSG_BOX_LINE(40, "--Row start: " << query_aie_metadata.core.row_start);
+    MSG_BOX_LINE(40, "--DMA channel count: " << query_aie_metadata.core.dma_channel_count);
+    MSG_BOX_LINE(40, "--Lock count: " << query_aie_metadata.core.lock_count);
+    MSG_BOX_LINE(40, "--Event reg count: " << query_aie_metadata.core.event_reg_count);
+    MSG_BOX_LINE(40, "NPU mem Info: ");
+    MSG_BOX_LINE(40, "--Row count: " << query_aie_metadata.mem.row_count);
+    MSG_BOX_LINE(40, "--Row start: " << query_aie_metadata.mem.row_start);
+    MSG_BOX_LINE(40, "--DMA channel count: " << query_aie_metadata.mem.dma_channel_count);
+    MSG_BOX_LINE(40, "--Lock count: " << query_aie_metadata.mem.lock_count);
+    MSG_BOX_LINE(40, "--Event reg count: " << query_aie_metadata.mem.event_reg_count);
+    MSG_BOX_LINE(40, "NPU shim Info: ");
+    MSG_BOX_LINE(40, "--Row count: " << query_aie_metadata.shim.row_count);
+    MSG_BOX_LINE(40, "--Row start: " << query_aie_metadata.shim.row_start);
+    MSG_BOX_LINE(40, "--DMA channel count: " << query_aie_metadata.shim.dma_channel_count);
+    MSG_BOX_LINE(40, "--Lock count: " << query_aie_metadata.shim.lock_count);
+    MSG_BOX_LINE(40, "--Event reg count: " << query_aie_metadata.shim.event_reg_count);
+    MSG_BONDLINE(40);
+}
+
+float npu_app::get_npu_power(bool print){
+    // get the npu power consumption, unit is Watt
+    int fd = open("/dev/accel/accel0", O_RDWR);
+    if (fd < 0) {
+        perror("Failed to open amdgpu device");
+        return -1;
+    }
+    amdxdna_drm_query_sensor query_sensor;
+
+    amdxdna_drm_get_info get_info = {
+        .param = DRM_AMDXDNA_QUERY_SENSORS,
+        .buffer_size = sizeof(amdxdna_drm_query_sensor),
+        .buffer = (unsigned long)&query_sensor,
+    };
+    int ret = ioctl(fd, DRM_IOCTL_AMDXDNA_GET_INFO, &get_info);
+    if (ret < 0) {
+        std::cout << "Error code: " << ret << std::endl;
+        perror("Failed to get telemetry information");
+        close(fd);
+        return -1;
+    }
+    if (print){
+        MSG_BOX(40, "NPU power: " << query_sensor.input << " " << query_sensor.units);
+    }
+    close(fd);
+    return (float)query_sensor.input * pow(10, query_sensor.unitm);
 }

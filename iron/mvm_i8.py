@@ -12,7 +12,7 @@ def my_matmul(arch: str = "npu2"):
 
     if arch == "npu1":
         dev = AIEDevice.npu1_4col
-        total_cols = 4
+        total_cols = 1
         total_rows = 4
         mvm_rows = 1
         mvm_cols = 1

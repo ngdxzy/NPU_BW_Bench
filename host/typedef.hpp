@@ -17,32 +17,7 @@
 #include "xrt/xrt_kernel.h"
 #include "vector_view.hpp"
 
-#ifndef DATATYPES_USING_DEFINED
-
-#define DATATYPES_USING_DEFINED
-
-#ifndef DTYPE_IN
-#define DTYPE_IN std::bfloat16_t
-#endif
-
-#ifndef DTYPE_OUT
-#define DTYPE_OUT std::bfloat16_t
-#endif
-
-#ifndef DTYPE_ACC
-#define DTYPE_ACC std::bfloat16_t
-
-#endif
-
-using A_DATATYPE = DTYPE_IN;
-using B_DATATYPE = DTYPE_IN;
-using C_DATATYPE = DTYPE_OUT;
-using ACC_DATATYPE = DTYPE_OUT;
-
-#endif
-
-typedef A_DATATYPE dtype;
-typedef float accdtype;
-typedef vector<dtype> vdtype;
+typedef int8_t dtype_in;
+typedef int32_t dtype_out;
 
 #endif
