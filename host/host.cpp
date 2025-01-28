@@ -21,8 +21,8 @@
 
 // Verification tolerance
 // See "Note on Numerical Tolerances" in README.md
-float abs_tol = matmul_common::get_abs_tol<C_DATATYPE>();
-float rel_tol = matmul_common::get_rel_tol<C_DATATYPE>();
+float abs_tol = matmul_common::get_abs_tol<DTYPE_OUT>();
+float rel_tol = matmul_common::get_rel_tol<DTYPE_OUT>();
 
 namespace po = boost::program_options;
 
