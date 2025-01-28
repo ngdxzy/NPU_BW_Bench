@@ -10,7 +10,7 @@
 
 // General logging macro
 #if VERBOSE >= 1
-    #define LOG_VERBOSE(level, msg) if (level <= VERBOSE) { std::cout << "[log]  " << msg << std::endl; }
+    #define LOG_VERBOSE(level, msg) if (level <= VERBOSE) { std::cout << "[log ]  " << msg << std::endl; }
 #else
     #define LOG_VERBOSE(level, msg) ((void)0) // No-op
 #endif
@@ -18,7 +18,7 @@
 // Conditional verbose logging macro
 #if VERBOSE >= 1
     #define LOG_VERBOSE_IF(level, condition, msg) \
-        if (level <= VERBOSE && (condition)) { std::cout << "[log]  " << msg << std::endl; }
+        if (level <= VERBOSE && (condition)) { std::cout << "[log ]  " << msg << std::endl; }
 #else
     #define LOG_VERBOSE_IF(level, condition, msg) ((void)0) // No-op
 #endif
@@ -26,8 +26,8 @@
 // Conditional verbose logging macro with else
 #if VERBOSE >= 1
     #define LOG_VERBOSE_IF_ELSE(level, condition, msg_true, msg_false) \
-        if (level <= VERBOSE && (condition)) { std::cout << "[log]  " << msg_true << std::endl; } \
-        else { std::cout << "[log]  " << msg_false << std::endl; }
+        if (level <= VERBOSE && (condition)) { std::cout << "[log ]  " << msg_true << std::endl; } \
+        else { std::cout << "[log ]  " << msg_false << std::endl; }
 #else
     #define LOG_VERBOSE_IF_ELSE(level, condition, msg_true, msg_false) ((void)0) // No-op
 #endif

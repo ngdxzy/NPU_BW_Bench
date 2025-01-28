@@ -33,20 +33,6 @@ time_with_unit duration_s(time_point start, time_point stop){
     return std::make_pair(std::chrono::duration_cast<std::chrono::seconds>(stop - start).count(), "s");
 }
 
-time_with_unit re_unit(float time_in_us){
-    std::string time_unit = "us";
-    float time = time_in_us;
-    if (time_in_us > 1000){
-        time /= 1000;
-        time_unit = "ms";
-    }
-    if (time_in_us > 1000000){
-        time /= 1000000;
-        time_unit = "s";
-    }
-    return std::make_pair(time, time_unit);
-}
-
 time_with_unit cast_to_us(time_with_unit time){
     if (time.second == "us"){
         return time;
@@ -91,6 +77,22 @@ time_with_unit cast_to_s(time_with_unit time){
         return time;
     }
 }   
+
+time_with_unit re_unit(time_with_unit time){
+    time = cast_to_us(time);
+    float time_us = time.first;
+    std::string time_unit = time.second;
+    if (time_us > 1000){
+        time_us /= 1000;
+        time_unit = "ms";
+    }
+    if (time_us > 1000000){
+        time_us /= 1000000;
+        time_unit = "s";
+    }
+    return std::make_pair(time_us, time_unit);
+}
+
 
 }
 
@@ -137,10 +139,12 @@ int compare_vectors(vector<T>& y, vector<T>& y_ref, int print_errors = 16){
     return total_errors;
 }
 
-void print_npu_profile(float npu_time_in_us, float op){
-    std::pair<float, std::string> time_united = time_utils::re_unit(npu_time_in_us);
+void print_npu_profile(time_utils::time_with_unit npu_time, float op){
+    time_utils::time_with_unit time_united = time_utils::re_unit(npu_time);
+    time_united = time_utils::cast_to_s(time_united);
+    
 
-    float ops = op / (npu_time_in_us / 1000000);
+    float ops = op / (time_united.first);
     float speed = ops / 1000000;
     std::string ops_unit = "Mops";
     std::string speed_unit = "Mops/s";
@@ -152,6 +156,8 @@ void print_npu_profile(float npu_time_in_us, float op){
         speed /= 1000000;
         speed_unit = "Tops/s";
     }
+
+    time_united = time_utils::re_unit(npu_time);
     MSG_BONDLINE(40);
     MSG_BOX_LINE(40, "NPU time : " << time_united.first << " " << time_united.second);
     MSG_BOX_LINE(40, "NPU speed: " << speed << " " << speed_unit);
