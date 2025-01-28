@@ -13,7 +13,7 @@ ${BITSTREAM_O_DIR}/from_mlir/%.xclbin: ${HOME_DIR}/mlir/%.mlir ${KERNEL_OBJS}
 	mkdir -p ${@D}
 	cp ${KERNEL_OBJS} ${@D}
 	cd ${@D} && aiecc.py --aie-generate-cdo --no-compile-host \
-		--xclbin-name=${@F} $(<:${HOME_DIR}/mlir/%=../../../../mlir/%)
+		--xclbin-name=${@F} $(<:${HOME_DIR}/mlir/%=../../../mlir/%)
 	mkdir -p build/xclbins
 	cp ${@} build/xclbins/
 
@@ -22,7 +22,7 @@ ${BITSTREAM_O_DIR}/from_mlir/%.xclbin: ${HOME_DIR}/mlir/%.mlir ${KERNEL_OBJS}
 ${BITSTREAM_O_DIR}/from_mlir/%.txt: ${HOME_DIR}/mlir/%.mlir 
 	mkdir -p ${@D}
 	cd ${@D} && aiecc.py --aie-generate-cdo --aie-only-generate-npu --no-compile-host \
-		--npu-insts-name=${@F} $(<:${HOME_DIR}/mlir/%=../../../../mlir/%)
+		--npu-insts-name=${@F} $(<:${HOME_DIR}/mlir/%=../../../mlir/%)
 	mkdir -p build/insts
 	cp ${@} build/insts/
 
