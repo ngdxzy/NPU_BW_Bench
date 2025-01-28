@@ -48,8 +48,8 @@ int main(int argc, const char *argv[]) {
     // Fix the seed to ensure reproducibility in CI.
     srand(0);
     accel_user_desc accel_desc;
-    accel_desc.xclbin_name = "build/xclbins/lm_head_i8.xclbin";
-    accel_desc.instr_name = "build/insts/lm_head_i8.txt";
+    accel_desc.xclbin_name = "build/xclbins/mvm_i8.xclbin";
+    accel_desc.instr_name = "build/insts/mvm_i8.txt";
     std::cout << "Matrix size " << M << "x" << K << "x" << N << std::endl;
 
     npu_app npu_instance(1, 1, 0);
