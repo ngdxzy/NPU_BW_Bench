@@ -34,15 +34,8 @@
 
 #endif
 
-using A_DATATYPE = DTYPE_IN;
-using B_DATATYPE = DTYPE_IN;
-using C_DATATYPE = DTYPE_OUT;
-using ACC_DATATYPE = DTYPE_OUT;
-
 #endif
 
-typedef A_DATATYPE dtype;
-typedef float accdtype;
-typedef vector<dtype> vdtype;
+typedef vector<DTYPE_IN> vdtype;
 
 #endif
