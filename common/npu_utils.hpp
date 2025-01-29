@@ -28,7 +28,7 @@
 #include "amdxdna_accel.h"
 #include "vector_view.hpp"
 #include "debug_utils.hpp"
-
+#include "experimental/xrt_kernel.h"
 // Accelerator description
 // There should be only one npu_app inside main.
 typedef struct {
@@ -102,6 +102,13 @@ public:
     ert_cmd_state run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, xrt::bo& Out1, int app_id = 0);
     ert_cmd_state run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, int app_id = 0);
     ert_cmd_state run(xrt::bo& In0, xrt::bo& Out0, int app_id = 0);
+
+    xrt::run create_run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, xrt::bo& Out1, int app_id);
+    xrt::run create_run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, int app_id);
+    xrt::run create_run(xrt::bo& In0, xrt::bo& Out0, int app_id);
+
+    xrt::runlist create_runlist(int app_id);
+    
     void list_kernels();
     void write_out_trace(char *traceOutPtr, size_t trace_size, std::string path);
     void print_npu_info();

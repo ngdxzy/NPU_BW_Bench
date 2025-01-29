@@ -139,10 +139,11 @@ int compare_vectors(vector<T>& y, vector<T>& y_ref, int print_errors = 16){
     return total_errors;
 }
 
-void print_npu_profile(time_utils::time_with_unit npu_time, float op){
+void print_npu_profile(time_utils::time_with_unit npu_time, float op, int n_iter = 1){
+    npu_time.first /= n_iter;
     time_utils::time_with_unit time_united = time_utils::re_unit(npu_time);
     time_united = time_utils::cast_to_s(time_united);
-    
+
 
     float ops = op / (time_united.first);
     float speed = ops / 1000000;

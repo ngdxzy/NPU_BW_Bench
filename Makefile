@@ -50,6 +50,9 @@ bitstream: ${XCLBIN_TARGETS}
 host: ${HOST_C_TARGET}
 
 
+clean_host:
+	-@rm -rf build/host
+
 export: bitstream instructions
 	cp ${XCLBIN_TARGETS} ../../bitstream/
 	cp ${INSTS_TARGETS} ../../bitstream/
