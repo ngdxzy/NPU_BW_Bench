@@ -106,7 +106,6 @@ int npu_app::_load_xclbin(std::string xclbin_name){
     auto kernelName = xkernel.get_name();
     this->kernel_descs[this->kernel_desc_count].context = xrt::hw_context(this->device, this->kernel_descs[this->kernel_desc_count].xclbin.get_uuid());
     this->kernel_descs[this->kernel_desc_count].kernel = xrt::kernel(this->kernel_descs[this->kernel_desc_count].context, kernelName);
-    this->kernel_desc_count++;
     LOG_VERBOSE(2, "Xclbin: " << xclbin_name << " loaded successfully!");
     return 0;
 }
