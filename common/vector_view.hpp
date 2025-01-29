@@ -69,6 +69,18 @@ public:
         }
     }
 
+    // constructor from another vector
+    vector(const vector<T>& vec) : data_(vec.data_), size_(vec.size_), is_owner_(false), is_bo_owner_(false), bo_(vec.bo_) {}
+
+    // constructor from a right value
+    vector(vector<T>&& vec) : data_(vec.data_), size_(vec.size_), is_owner_(vec.is_owner_), is_bo_owner_(vec.is_bo_owner_), bo_(vec.bo_) {
+        vec.data_ = nullptr;
+        vec.size_ = 0;
+        vec.is_owner_ = false;
+        vec.is_bo_owner_ = false;
+        vec.bo_ = nullptr;
+    }
+
     // Constructor from a size
     // The vector owns the data
     vector(size_t size) : data_(new T[size]), size_(size), is_owner_(true), is_bo_owner_(false), bo_(nullptr) {}
@@ -100,6 +112,7 @@ public:
 
     // Destructor
     ~vector() {
+        LOG_VERBOSE_IF(3, is_owner_ || is_bo_owner_, "Deleting vector with is_owner: " << is_owner_ << " and is_bo_owner: " << is_bo_owner_ << " and data: " << data_ << " and size: " << size_);
         if (is_owner_) {
             if (data_ != nullptr){
                 // std::cout << "deleting vector" << data_ << std::endl;
@@ -148,7 +161,7 @@ public:
         size_ = vec.size_;
         is_owner_ = false;
         bo_ = vec.bo_;
-        is_bo_owner_ = vec.is_bo_owner_;
+        is_bo_owner_ = false;
         return *this;
     }
 
