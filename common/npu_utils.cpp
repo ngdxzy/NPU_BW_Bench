@@ -20,7 +20,7 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
             break;
         }
     }
-    LOG_VERBOSE_IF_ELSE(1, xclbin_id > -1, 
+    LOG_VERBOSE_IF_ELSE(2, xclbin_id > -1, 
         "Found xclbin: " << user_desc.xclbin_name << "registered as id " << xclbin_id << "!",
         "Xclbin: " << user_desc.xclbin_name << " not registered yet!"
     );
@@ -35,7 +35,7 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
         }
         this->registered_xclbin_names.push_back(user_desc.xclbin_name);
         xclbin_id = this->registered_xclbin_names.size() - 1;
-        LOG_VERBOSE(1, "Xclbin: " << user_desc.xclbin_name << " registered as id " << xclbin_id << "!");
+        LOG_VERBOSE(2, "Xclbin: " << user_desc.xclbin_name << " registered as id " << xclbin_id << "!");
         this->kernel_desc_count++;
     }
     // register the instr
@@ -46,7 +46,7 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
             break;
         }
     }
-    LOG_VERBOSE_IF_ELSE(1, app_id > -1, 
+    LOG_VERBOSE_IF_ELSE(2, app_id > -1, 
         "Found instruction: " << user_desc.instr_name << "registered as id " << app_id << "!",
         "Instruction: " << user_desc.instr_name << " not registered yet!"
     );
@@ -57,7 +57,7 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
         this->hw_descs[this->hw_desc_count].kernel_desc = &(this->kernel_descs[xclbin_id]);
         _load_instr_sequence(user_desc, this->hw_descs[this->hw_desc_count]);
         app_id = this->hw_desc_count;
-        LOG_VERBOSE(1, "Instruction: " << user_desc.instr_name << " registered as id " << app_id << "!");
+        LOG_VERBOSE(2, "Instruction: " << user_desc.instr_name << " registered as id " << app_id << "!");
         this->hw_desc_count++;
     }
     return app_id;
@@ -65,7 +65,7 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
 
 
 int npu_app::_load_instr_sequence(accel_user_desc& user_desc, accel_hw_desc& hw_desc){
-    LOG_VERBOSE(1, "Loading instruction sequence: " << user_desc.instr_name);
+    LOG_VERBOSE(2, "Loading instruction sequence: " << user_desc.instr_name);
     std::ifstream instr_file(user_desc.instr_name);
     hw_desc.instr_name = user_desc.instr_name;
     std::string line;
@@ -83,13 +83,13 @@ int npu_app::_load_instr_sequence(accel_user_desc& user_desc, accel_hw_desc& hw_
     memcpy(bufInstr, instr_v.data(), instr_v.size() * sizeof(int));
     hw_desc.bo_instr.sync(XCL_BO_SYNC_BO_TO_DEVICE);
     hw_desc.instr_size = instr_v.size();
-    LOG_VERBOSE(1, "Instruction sequence loaded successfully!");
+    LOG_VERBOSE(2, "Instruction sequence loaded successfully!");
     return 0;
 }
 
 
 int npu_app::_load_xclbin(std::string xclbin_name){
-    LOG_VERBOSE(1, "Loading xclbin: " << xclbin_name);
+    LOG_VERBOSE(2, "Loading xclbin: " << xclbin_name);
     this->kernel_descs[this->kernel_desc_count].xclbin = xrt::xclbin(xclbin_name);
     // int verbosity = VERBOSE;
     std::string Node = "MLIR_AIE";
@@ -107,12 +107,12 @@ int npu_app::_load_xclbin(std::string xclbin_name){
     this->kernel_descs[this->kernel_desc_count].context = xrt::hw_context(this->device, this->kernel_descs[this->kernel_desc_count].xclbin.get_uuid());
     this->kernel_descs[this->kernel_desc_count].kernel = xrt::kernel(this->kernel_descs[this->kernel_desc_count].context, kernelName);
     this->kernel_desc_count++;
-    LOG_VERBOSE(1, "Xclbin: " << xclbin_name << " loaded successfully!");
+    LOG_VERBOSE(2, "Xclbin: " << xclbin_name << " loaded successfully!");
     return 0;
 }
 
 xrt::bo npu_app::create_buffer(size_t size, int group_id, int app_id){
-    LOG_VERBOSE(1, "Creating buffer with size: " << size << " and group_id: " << group_id << " and app_id: " << app_id);
+    LOG_VERBOSE(2, "Creating buffer with size: " << size << " and group_id: " << group_id << " and app_id: " << app_id);
     if (app_id >= this->hw_descs.size()){
         throw std::runtime_error("App ID is out of range");
     }
@@ -121,7 +121,7 @@ xrt::bo npu_app::create_buffer(size_t size, int group_id, int app_id){
 
 template<typename T>
 vector<T> npu_app::create_bo_vector(size_t size, int group_id, int app_id){
-    LOG_VERBOSE(1, "Creating buffer vector with size: " << size << " and group_id: " << group_id << " and app_id: " << app_id);
+    LOG_VERBOSE(2, "Creating buffer vector with size: " << size << " and group_id: " << group_id << " and app_id: " << app_id);
     return vector<T>(size, this->device, this->hw_descs[app_id].kernel_desc->kernel, group_id);
 }
 
@@ -133,28 +133,28 @@ template vector<std::bfloat16_t> npu_app::create_bo_vector<std::bfloat16_t>(size
 
 ert_cmd_state npu_app::run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, xrt::bo& Out1, int app_id){
     unsigned int opcode = 3;
-    LOG_VERBOSE(2, "Running kernel with app_id: " << app_id);
+    LOG_VERBOSE(3, "Running kernel with app_id: " << app_id);
     auto run = this->hw_descs[app_id].kernel_desc->kernel(opcode, this->hw_descs[app_id].bo_instr, this->hw_descs[app_id].instr_size, In0, In1, Out0, Out1);
     ert_cmd_state r = run.wait();
-    LOG_VERBOSE(2, "Kernel run finished with status: " << r);
+    LOG_VERBOSE(3, "Kernel run finished with status: " << r);
     return r;
 }
 
 ert_cmd_state npu_app::run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, int app_id){
     unsigned int opcode = 3;
-    LOG_VERBOSE(2, "Running kernel with app_id: " << app_id);
+    LOG_VERBOSE(3, "Running kernel with app_id: " << app_id);
     auto run = this->hw_descs[app_id].kernel_desc->kernel(opcode, this->hw_descs[app_id].bo_instr, this->hw_descs[app_id].instr_size, In0, In1, Out0);
     ert_cmd_state r = run.wait();
-    LOG_VERBOSE(2, "Kernel run finished with status: " << r);
+    LOG_VERBOSE(3, "Kernel run finished with status: " << r);
     return r;
 }
 
 ert_cmd_state npu_app::run(xrt::bo& In0, xrt::bo& Out0, int app_id){
     unsigned int opcode = 3;
-    LOG_VERBOSE(2, "Running kernel with app_id: " << app_id);
+    LOG_VERBOSE(3, "Running kernel with app_id: " << app_id);
     auto run = this->hw_descs[app_id].kernel_desc->kernel(opcode, this->hw_descs[app_id].bo_instr, this->hw_descs[app_id].instr_size, In0, Out0);
     ert_cmd_state r = run.wait();
-    LOG_VERBOSE(2, "Kernel run finished with status: " << r);
+    LOG_VERBOSE(3, "Kernel run finished with status: " << r);
     return r;
 }
 
