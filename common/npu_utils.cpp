@@ -157,6 +157,43 @@ ert_cmd_state npu_app::run(xrt::bo& In0, xrt::bo& Out0, int app_id){
     return r;
 }
 
+xrt::run npu_app::create_run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, xrt::bo& Out1, int app_id){
+    xrt::run run = xrt::run(this->hw_descs[app_id].kernel_desc->kernel);
+    run.set_arg(0, 3);
+    run.set_arg(1, this->hw_descs[app_id].bo_instr);
+    run.set_arg(2, this->hw_descs[app_id].instr_size);
+    run.set_arg(3, In0);
+    run.set_arg(4, In1);
+    run.set_arg(5, Out0);
+    run.set_arg(6, Out1);
+    return run;
+}
+
+xrt::run npu_app::create_run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, int app_id){
+    xrt::run run = xrt::run(this->hw_descs[app_id].kernel_desc->kernel);
+    run.set_arg(0, 3);
+    run.set_arg(1, this->hw_descs[app_id].bo_instr);
+    run.set_arg(2, this->hw_descs[app_id].instr_size);
+    run.set_arg(3, In0);
+    run.set_arg(4, In1);
+    run.set_arg(5, Out0);
+    return run;
+}
+
+xrt::run npu_app::create_run(xrt::bo& In0, xrt::bo& Out0, int app_id){
+    xrt::run run = xrt::run(this->hw_descs[app_id].kernel_desc->kernel);
+    run.set_arg(0, 3);
+    run.set_arg(1, this->hw_descs[app_id].bo_instr);
+    run.set_arg(2, this->hw_descs[app_id].instr_size);
+    run.set_arg(3, In0);
+    run.set_arg(4, Out0);
+    return run;
+}
+
+xrt::runlist npu_app::create_runlist(int app_id){
+    return xrt::runlist(this->hw_descs[app_id].kernel_desc->context);
+}
+
 npu_app::~npu_app(){
     // std::cout<<"clear bin!" << std::endl;
     // this->kernel.~kernel();
@@ -167,11 +204,11 @@ npu_app::~npu_app(){
 void npu_app::list_kernels(){
     std::cout << "Listing kernels: (Total: " << this->hw_descs.size() << ")" << std::endl;
     for (int i = 0; i < this->hw_descs.size(); i++){
-        std::cout << "Instruction: " << this->hw_descs[i].instr_name << std::endl;
+        std::cout << "Instruction " << i << ": " << this->hw_descs[i].instr_name << std::endl;
     }
     std::cout << "Listing xclbins: (Total: " << this->kernel_descs.size() << ")" << std::endl;
     for (int i = 0; i < this->kernel_descs.size(); i++){
-        std::cout << "Xclbin: " << &this->kernel_descs[i].xclbin << std::endl;
+        std::cout << "Xclbin " << i << " at address: " <<  &this->kernel_descs[i].xclbin << std::endl;
     }
 }
 

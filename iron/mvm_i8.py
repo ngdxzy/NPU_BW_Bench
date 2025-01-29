@@ -12,7 +12,7 @@ def my_matmul(arch: str = "npu2"):
 
     if arch == "npu1":
         dev = AIEDevice.npu1_4col
-        total_cols = 1
+        total_cols = 4
         total_rows = 4
         mvm_rows = 1
         mvm_cols = 1
@@ -25,8 +25,8 @@ def my_matmul(arch: str = "npu2"):
     else:
         raise ValueError(f"Invalid device: {arch}")
 
-    M = 2048
-    K = 2048
+    M = 128
+    K = 128
     m = 128
     k = 128
 
@@ -152,8 +152,8 @@ def my_matmul(arch: str = "npu2"):
                     bd_id=2,
                     mem=B,
                     offsets=[0, 0, 0, 0],
-                    sizes=[M // m // n_cores, 1, K // 512, 512],
-                    strides=[0, 0, 512, 1],
+                    sizes=[M // m // n_cores, 1, 1, K],
+                    strides=[0, 0, 0, 1],
                 )
                 for i in range(mvm_cols):
                     # M offset: each column handles M // mvm_cols row in total
