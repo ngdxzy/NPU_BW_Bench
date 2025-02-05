@@ -9,13 +9,12 @@ from aie.helpers.dialects.ext.scf import _for as range_
 
 
 def my_matmul(arch: str = "npu2"):
-
     if arch == "npu1":
         dev = AIEDevice.npu1_4col
         total_cols = 4
         total_rows = 4
         mvm_rows = 1
-        mvm_cols = 1
+        mvm_cols = 4
     elif arch == "npu2":
         dev = AIEDevice.npu2
         total_cols = 8
@@ -25,8 +24,8 @@ def my_matmul(arch: str = "npu2"):
     else:
         raise ValueError(f"Invalid device: {arch}")
 
-    M = 128
-    K = 128
+    M = 128 * mvm_cols * mvm_rows * 4
+    K = 128 * 4
     m = 128
     k = 128
 
@@ -166,9 +165,6 @@ def my_matmul(arch: str = "npu2"):
                         offsets=[0, 0, 0, A_offset],
                         sizes=[M // mvm_cols // (m * mvm_rows), K_div_k, mvm_rows * m, k],
                         strides=[m_x_K * mvm_rows, k, K, 1],
-
-                        # sizes=[M // mvm_cols // (m * mvm_rows), K_div_k, mvm_rows * m, k],
-                        # strides=[mvm_rows * m * K, mvm_rows * m * k, k, 1],
                     )
                     npu_dma_memcpy_nd(
                         metadata=memC_fifos[i],

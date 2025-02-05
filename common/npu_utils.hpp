@@ -29,6 +29,7 @@
 #include "vector_view.hpp"
 #include "debug_utils.hpp"
 #include "experimental/xrt_kernel.h"
+#include "npu_instr_utils.hpp"
 // Accelerator description
 // There should be only one npu_app inside main.
 typedef struct {
@@ -113,6 +114,8 @@ public:
     void write_out_trace(char *traceOutPtr, size_t trace_size, std::string path);
     void print_npu_info();
     float get_npu_power(bool print = true);
+
+    void interperate_bd(int app_id);
 };
 
 #endif

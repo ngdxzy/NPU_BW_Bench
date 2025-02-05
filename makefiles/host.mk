@@ -7,16 +7,18 @@ HOST_HEADERS = $(wildcard ${HOST_SRCDIR}/*.hpp)
 HOST_SRCS = $(wildcard ${HOST_SRCDIR}/*.cpp)
 
 NPU_UTILS_SRCS = ${HOME_DIR}/common/npu_utils.cpp
+NPU_INSTR_UTILS_SRCS = ${HOME_DIR}/common/npu_instr_utils.cpp
 NPU_UTILS_HEADERS = ${HOME_DIR}/common/npu_utils.hpp
 NPU_UTILS_HEADERS += ${HOME_DIR}/common/vector_view.hpp
-NPU_UTILS_HEADERS += ${HOME_DIR}/common/debug_utils.hpp
+NPU_INSTR_UTILS_HEADERS += ${HOME_DIR}/common/debug_utils.hpp
+NPU_INSTR_UTILS_HEADERS += ${HOME_DIR}/common/npu_instr_utils.hpp
 NPU_UTILS_OBJS = ${HOST_O_DIR}/npu_utils.o
-
+NPU_INSTR_UTILS_OBJS = ${HOST_O_DIR}/npu_instr_utils.o
 HOST_OBJS = $(patsubst $(HOST_SRCDIR)/%.cpp,$(HOST_O_DIR)/%.o,$(HOST_SRCS))
 
 HOST_DEPS = $(HOST_OBJS:.o=.d)
 NPU_UTILS_DEPS = $(NPU_UTILS_OBJS:.o=.d)
-
+NPU_INSTR_UTILS_DEPS = $(NPU_INSTR_UTILS_OBJS:.o=.d)
 VERBOSE := 0
 
 CXX := g++-13
@@ -55,7 +57,7 @@ endif
 
 
 
-${HOST_C_TARGET}: ${HOST_OBJS} ${NPU_UTILS_OBJS}
+${HOST_C_TARGET}: ${HOST_OBJS} ${NPU_UTILS_OBJS} ${NPU_INSTR_UTILS_OBJS}
 	mkdir -p ${HOST_O_DIR}
 	echo ${HOST_OBJS}
 	$(CXX) -o "$@" $(+) $(LDFLAGS)
@@ -65,6 +67,10 @@ $(HOST_O_DIR)/%.o: $(HOST_SRCDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) -o "$@" "$<"
 
 $(HOST_O_DIR)/npu_utils.o: $(NPU_UTILS_SRCS)
+	-@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) -o "$@" "$<"
+
+$(HOST_O_DIR)/npu_instr_utils.o: $(NPU_INSTR_UTILS_SRCS)
 	-@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o "$@" "$<"
 

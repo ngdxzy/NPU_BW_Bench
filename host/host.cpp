@@ -32,8 +32,8 @@ int main(int argc, const char *argv[]) {
     arg_utils::add_default_options(desc);
 
     // Add custom options
-    desc.add_options()("M,m", po::value<int>()->default_value(128), "M");
-    desc.add_options()("K,k", po::value<int>()->default_value(128), "K");
+    desc.add_options()("M,m", po::value<int>()->default_value(128 * 16), "M");
+    desc.add_options()("K,k", po::value<int>()->default_value(128 * 4), "K");
 
     arg_utils::parse_options(argc, argv, desc, vm);
     
@@ -58,14 +58,22 @@ int main(int argc, const char *argv[]) {
     };
     accel_user_desc accel_desc_1 = {
         .xclbin_name = "build/xclbins/mvm_i8.xclbin",
-        .instr_name = "build/insts/mvm_i8_1.txt",
+        .instr_name = "build/insts/mvm_i8.txt.redundant",
     };
+
     
     header_print("info", "Matrix size " << M << "x" << K << "x" << N);
 
     int app_id_0 = npu_instance.register_accel_app(accel_desc_0);
     int app_id_1 = npu_instance.register_accel_app(accel_desc_1);
+
+    npu_instance.print_npu_info();
+
     npu_instance.list_kernels();
+
+    npu_instance.interperate_bd(0);
+    // npu_instance.interperate_bd(1); They are the same
+
 
     vector w_0 = npu_instance.create_bo_vector<dtype_in>(W_VOLUME, 3, app_id_0);
     vector x_0 = npu_instance.create_bo_vector<dtype_in>(X_VOLUME, 4, app_id_0);

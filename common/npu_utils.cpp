@@ -313,3 +313,10 @@ float npu_app::get_npu_power(bool print){
     close(fd);
     return (float)query_sensor.input * pow(10, query_sensor.unitm);
 }
+
+
+void npu_app::interperate_bd(int app_id){
+    // sync from the device to be consistent
+    this->hw_descs[app_id].bo_instr.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+    npu_instr_utils::print_bd(this->hw_descs[app_id].bo_instr);
+}

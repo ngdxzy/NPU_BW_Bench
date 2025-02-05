@@ -1,16 +1,8 @@
-#ifndef __UTILS_H__
-#define __UTILS_H__
+#ifndef __UTILS_HPP__
+#define __UTILS_HPP__
 #include "typedef.hpp"
 #include "debug_utils.hpp"
 #include <chrono>
-
-
-#define header_print(header, msg) \
-    do { \
-        std::ostringstream oss; \
-        oss << msg; \
-        std::cout << '[' << header << "]  " << oss.str() << std::endl; \
-    } while (0)
 
 namespace time_utils {
 
@@ -164,18 +156,5 @@ void print_npu_profile(time_utils::time_with_unit npu_time, float op, int n_iter
     MSG_BOX_LINE(40, "NPU speed: " << speed << " " << speed_unit);
     MSG_BONDLINE(40);
 }
-
-void box_print(std::string msg, int width = 40){
-    MSG_BOX(width, msg);
-}
-
-void box_print_bound(int width = 40){
-    MSG_BONDLINE(width);
-}
-
-void box_print_line(std::string msg, int width = 40){
-    MSG_BOX_LINE(width, msg);
-}
-
 }
 #endif

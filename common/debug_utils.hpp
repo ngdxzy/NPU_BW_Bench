@@ -69,4 +69,35 @@
         return oss.str(); \
     } while (0)
 
+#define header_print(header, msg) \
+    do { \
+        std::ostringstream oss; \
+        oss << msg; \
+        std::cout << '[' << header << "]  " << oss.str() << std::endl; \
+    } while (0)
+
+inline void box_print(std::string msg, int width = 40){
+    MSG_BOX(width, msg);
+}
+
+inline void box_print_bound(int width = 40){
+    MSG_BONDLINE(width);
+}
+
+inline void box_print_line(std::string msg, int width = 40){
+    MSG_BOX_LINE(width, msg);
+}
+
+inline std::string size_t_to_string(size_t size){
+    if (size /  1024 == 0) {
+        return std::to_string(size);
+    } else if (size / (1024 * 1024) == 0) {
+        return std::to_string(size / 1024) + "K";
+    } else if (size / (1024 * 1024) == 0){
+        return std::to_string(size / (1024 * 1024)) + "M";
+    } else {
+        return std::to_string(size / (1024 * 1024 * 1024)) + "G";
+    }
+}
+
 #endif
