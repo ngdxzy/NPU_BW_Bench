@@ -318,5 +318,69 @@ float npu_app::get_npu_power(bool print){
 void npu_app::interperate_bd(int app_id){
     // sync from the device to be consistent
     this->hw_descs[app_id].bo_instr.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-    npu_instr_utils::print_bd(this->hw_descs[app_id].bo_instr);
+    npu_sequence seq(this->hw_descs[app_id].bo_instr);
+    seq.print_sequence();
+    seq.to_npu();
+}
+
+std::vector<u_int64_t> npu_app::read_mem(uint32_t col, uint32_t row, uint32_t addr, uint32_t size){
+    // read the register from the device
+    std::vector<u_int64_t> regs(size);
+    int fd = open("/dev/accel/accel0", O_RDWR);
+    if (fd < 0) {
+        perror("Failed to open npu device");
+        return std::vector<u_int64_t>();
+    }
+    amdxdna_drm_aie_mem aie_mem = {
+        .col = col,
+        .row = row,
+        .addr = addr,
+        .size = size,
+        .buf_p = (__u64)regs.data(),
+    };
+
+    amdxdna_drm_get_info get_info = {
+        .param = DRM_AMDXDNA_READ_AIE_MEM,
+        .buffer_size = sizeof(amdxdna_drm_aie_mem),
+        .buffer = (unsigned long)&aie_mem,
+    };
+    int ret = ioctl(fd, DRM_IOCTL_AMDXDNA_GET_INFO, &get_info);
+    if (ret < 0) {
+        std::cout << "Error code: " << ret << std::endl;
+        perror("Failed to read memory");
+        close(fd);
+        return std::vector<u_int64_t>();
+    }
+    close(fd);
+    return regs;
+}
+
+uint32_t npu_app::read_reg(uint32_t col, uint32_t row, uint32_t addr){
+    // read the register from the device
+    // __u32 val;
+    // int fd = open("/dev/accel/accel0", O_RDWR);
+    // if (fd < 0) {
+    //     perror("Failed to open npu device");
+    //     return 0;
+    // }
+    // amdxdna_drm_aie_reg aie_reg = {
+    //     .col = col,
+    //     .row = row,
+    //     .addr = addr,
+    //     .val = val,
+    // };
+    // amdxdna_drm_get_info get_info = {
+    //     .param = DRM_AMDXDNA_READ_AIE_REG,
+    //     .buffer_size = sizeof(amdxdna_drm_aie_reg),
+    //     .buffer = (unsigned long)&aie_reg,
+    // };
+    // int ret = ioctl(fd, DRM_IOCTL_AMDXDNA_GET_INFO, &get_info);
+    // if (ret < 0) {
+    //     std::cout << "Error code: " << ret << std::endl;
+    //     perror("Failed to read register!");
+    //     close(fd);
+    //     return 0;
+    // }
+    // close(fd);
+    // return val; // the value is already in the val variable
 }

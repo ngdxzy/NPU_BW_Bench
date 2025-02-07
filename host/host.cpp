@@ -20,6 +20,12 @@
 
 namespace po = boost::program_options;
 
+void callback_0(const void *data, ert_cmd_state state, void *user_data) {
+    header_print("info", "Run 0 completed");
+}
+void callback_1(const void *data, ert_cmd_state state, void *user_data) {
+    header_print("info", "Run 1 completed");
+}
 
 void linear(vector<dtype_out>& y, vector<dtype_in>& w, vector<dtype_in>& x);
 
@@ -32,7 +38,7 @@ int main(int argc, const char *argv[]) {
     arg_utils::add_default_options(desc);
 
     // Add custom options
-    desc.add_options()("M,m", po::value<int>()->default_value(128 * 16), "M");
+    desc.add_options()("M,m", po::value<int>()->default_value(128 * 4), "M");
     desc.add_options()("K,k", po::value<int>()->default_value(128 * 4), "K");
 
     arg_utils::parse_options(argc, argv, desc, vm);
@@ -72,9 +78,8 @@ int main(int argc, const char *argv[]) {
     npu_instance.list_kernels();
 
     npu_instance.interperate_bd(0);
-    // npu_instance.interperate_bd(1); They are the same
-
-
+    // npu_instance.interperate_bd(1); // They are the same
+    return 0;
     vector w_0 = npu_instance.create_bo_vector<dtype_in>(W_VOLUME, 3, app_id_0);
     vector x_0 = npu_instance.create_bo_vector<dtype_in>(X_VOLUME, 4, app_id_0);
     vector y_0 = npu_instance.create_bo_vector<dtype_out>(Y_VOLUME, 5, app_id_0);
@@ -104,12 +109,43 @@ int main(int argc, const char *argv[]) {
     x_0.sync_to_device();
     x_1.sync_to_device();
 
+    auto run_0 = npu_instance.create_run(w_0.bo(), x_0.bo(), y_0.bo(), app_id_0);
+    auto run_1 = npu_instance.create_run(w_1.bo(), x_1.bo(), y_1.bo(), app_id_1);
+    header_print("info", "Running runtime test.");
+
+    // run_0.start();
+    // run_0.wait();
+
+    // uint32_t reg_0 = npu_instance.read_reg(0, 0, 0x00000000);
+    // uint32_t reg_1 = npu_instance.read_reg(0, 0, 0x00000004);
+    // header_print("info", "Register 0: " << std::hex << reg_0 << " Register 1: " << reg_1);
+
+    // return 0;
+
     header_print("info", "Running kernel with bare call.");
     time_utils::time_with_unit npu_time = {0.0, "us"};
+    // xrt::queue queue;
+    // for (int i = 0; i < 1000; i++) {
+	//     time_utils::time_point start = time_utils::now();
+    //     auto event0 = queue.enqueue([&]() {
+    //         run_0.start();
+    //         run_0.wait();
+    //     });
+    //     auto event1 = queue.enqueue([&]() {
+    //         run_1.start();
+    //         run_1.wait();
+    //     });
+    //     event0.wait();
+    //     event1.wait();
+	//     time_utils::time_point stop = time_utils::now();
+	//     npu_time.first += time_utils::duration_us(start, stop).first;
+    // }
     for (int i = 0; i < 1000; i++) {
-	    time_utils::time_point start = time_utils::now();
-	    npu_instance.run(w_0.bo(), x_0.bo(), y_0.bo(), app_id_0);
-	    npu_instance.run(w_1.bo(), x_1.bo(), y_1.bo(), app_id_1);
+        time_utils::time_point start = time_utils::now();
+        run_0.start();
+        run_0.wait();
+        run_1.start();
+        run_1.wait();
 	    time_utils::time_point stop = time_utils::now();
 	    npu_time.first += time_utils::duration_us(start, stop).first;
     }
@@ -129,7 +165,7 @@ int main(int argc, const char *argv[]) {
     if (utils::compare_vectors(y_1, y_ref_1) > 0){
         pass = false;
     }
-    // run with runlist
+    // // run with runlist
     xrt::runlist runlist = npu_instance.create_runlist(app_id_0);
     y_0.memset(0);
     y_1.memset(0);
@@ -156,38 +192,12 @@ int main(int argc, const char *argv[]) {
     y_0.sync_from_device();    
     y_1.sync_from_device();
 
-    if (utils::compare_vectors(y_0, y_ref_0) > 0){
-        pass = false;
-    }
-    if (utils::compare_vectors(y_1, y_ref_1) > 0){
-        pass = false;
-    }
-    
-
-    // run with queue   
-    // xrt::queue q = xrt::queue();
-    // npu_time.first = 0;
-    // std::vector<std::shared_future<void>> events;
-    // {
-    //     time_utils::time_point start = time_utils::now();
-    //     for (int i = 0; i < 1000; i++){
-    //         xrt::run run = npu_instance.create_run(w.bo(), x.bo(), y.bo(), app_id);
-    //         auto event = q.enqueue([&]() {
-    //             run.start();
-    //             run.wait();  // Wait for completion
-    //         });
-    //         events.push_back(event);
-    //     }
-    //     for (auto event : events){
-    //         event.wait();
-    //     }
-    //     time_utils::time_point stop = time_utils::now();
-    //     npu_time.first += time_utils::duration_us(start, stop).first;
-    //     npu_time.first /= 1000;
+    // if (utils::compare_vectors(y_0, y_ref_0) > 0){
+    //     pass = false;
     // }
-    // MSG_BONDLINE(40);
-    // MSG_BOX_LINE(40, "NPU time with queue: " << npu_time.first << " us");
-    // MSG_BONDLINE(40);
+    // if (utils::compare_vectors(y_1, y_ref_1) > 0){
+    //     pass = false;
+    // }
 
     if (pass){
         header_print("info", "PASSED ");

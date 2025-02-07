@@ -29,6 +29,11 @@
 #include "vector_view.hpp"
 #include "debug_utils.hpp"
 #include "experimental/xrt_kernel.h"
+#include "experimental/xrt_ext.h"
+#include "experimental/xrt_module.h"
+#include "experimental/xrt_elf.h"
+#include "xrt/xrt_graph.h"
+
 #include "npu_instr_utils.hpp"
 // Accelerator description
 // There should be only one npu_app inside main.
@@ -116,6 +121,8 @@ public:
     float get_npu_power(bool print = true);
 
     void interperate_bd(int app_id);
+    std::vector<u_int64_t> read_mem(uint32_t col, uint32_t row, uint32_t addr, uint32_t size);
+    uint32_t read_reg(uint32_t col, uint32_t row, uint32_t addr);
 };
 
 #endif

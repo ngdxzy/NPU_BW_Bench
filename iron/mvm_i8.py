@@ -14,7 +14,7 @@ def my_matmul(arch: str = "npu2"):
         total_cols = 4
         total_rows = 4
         mvm_rows = 1
-        mvm_cols = 4
+        mvm_cols = 1
     elif arch == "npu2":
         dev = AIEDevice.npu2
         total_cols = 8
