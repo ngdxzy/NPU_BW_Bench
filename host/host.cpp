@@ -111,35 +111,11 @@ int main(int argc, const char *argv[]) {
 
     auto run_0 = npu_instance.create_run(w_0.bo(), x_0.bo(), y_0.bo(), app_id_0);
     auto run_1 = npu_instance.create_run(w_1.bo(), x_1.bo(), y_1.bo(), app_id_1);
+	
     header_print("info", "Running runtime test.");
-
-    // run_0.start();
-    // run_0.wait();
-
-    // uint32_t reg_0 = npu_instance.read_reg(0, 0, 0x00000000);
-    // uint32_t reg_1 = npu_instance.read_reg(0, 0, 0x00000004);
-    // header_print("info", "Register 0: " << std::hex << reg_0 << " Register 1: " << reg_1);
-
-    // return 0;
-
     header_print("info", "Running kernel with bare call.");
     time_utils::time_with_unit npu_time = {0.0, "us"};
-    // xrt::queue queue;
-    // for (int i = 0; i < 1000; i++) {
-	//     time_utils::time_point start = time_utils::now();
-    //     auto event0 = queue.enqueue([&]() {
-    //         run_0.start();
-    //         run_0.wait();
-    //     });
-    //     auto event1 = queue.enqueue([&]() {
-    //         run_1.start();
-    //         run_1.wait();
-    //     });
-    //     event0.wait();
-    //     event1.wait();
-	//     time_utils::time_point stop = time_utils::now();
-	//     npu_time.first += time_utils::duration_us(start, stop).first;
-    // }
+	
     for (int i = 0; i < 1000; i++) {
         time_utils::time_point start = time_utils::now();
         run_0.start();
@@ -165,7 +141,7 @@ int main(int argc, const char *argv[]) {
     if (utils::compare_vectors(y_1, y_ref_1) > 0){
         pass = false;
     }
-    // // run with runlist
+    // run with runlist
     xrt::runlist runlist = npu_instance.create_runlist(app_id_0);
     y_0.memset(0);
     y_1.memset(0);
@@ -191,13 +167,6 @@ int main(int argc, const char *argv[]) {
     MSG_BONDLINE(40);
     y_0.sync_from_device();    
     y_1.sync_from_device();
-
-    // if (utils::compare_vectors(y_0, y_ref_0) > 0){
-    //     pass = false;
-    // }
-    // if (utils::compare_vectors(y_1, y_ref_1) > 0){
-    //     pass = false;
-    // }
 
     if (pass){
         header_print("info", "PASSED ");
