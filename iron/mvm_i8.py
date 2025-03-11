@@ -19,8 +19,8 @@ def my_matmul(arch: str = "npu2"):
         dev = AIEDevice.npu2
         total_cols = 8
         total_rows = 4
-        mvm_rows = 2
-        mvm_cols = 5
+        mvm_rows = 1
+        mvm_cols = 1
     else:
         raise ValueError(f"Invalid device: {arch}")
 
