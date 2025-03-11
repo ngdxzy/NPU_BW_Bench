@@ -21,7 +21,7 @@ ${MLIR_O_DIR}/%.mlir: ${HOME_DIR}/iron/%.py
 ${BITSTREAM_O_DIR}/from_iron/%.xclbin: ${MLIR_O_DIR}/%.mlir ${KERNEL_OBJS}
 	mkdir -p ${@D}
 	cp ${KERNEL_OBJS} ${@D}
-	cd ${@D} && aiecc.py --aie-generate-cdo --no-compile-host \
+	cd ${@D} && aiecc.py --aie-generate-cdo --aie-generate-xclbin --no-compile-host \
 		--xclbin-name=${@F} $(<:${MLIR_O_DIR}/%=../../mlir/%)
 	mkdir -p build/xclbins
 	cp ${@} build/xclbins/
@@ -29,7 +29,7 @@ ${BITSTREAM_O_DIR}/from_iron/%.xclbin: ${MLIR_O_DIR}/%.mlir ${KERNEL_OBJS}
 # $(foreach type,$(INST_TYPES),$(eval $(call AIECC_RULE,$(type))))
 ${BITSTREAM_O_DIR}/from_iron/%.txt: ${MLIR_O_DIR}/%.mlir
 	mkdir -p ${@D}
-	cd ${@D} && aiecc.py --aie-generate-cdo --aie-only-generate-npu --no-compile-host \
+	cd ${@D} && aiecc.py --aie-generate-npu-insts --no-compile-host -n \
 		--npu-insts-name=${@F} $(<:${MLIR_O_DIR}/%=../../mlir/%)
 	mkdir -p build/insts
 	cp ${@} build/insts/
