@@ -74,7 +74,6 @@ int main(int argc, const char *argv[]) {
     int app_id_1 = npu_instance.register_accel_app(accel_desc_1);
 
     npu_instance.print_npu_info();
-
     npu_instance.list_kernels();
 
     npu_instance.interperate_bd(0);

@@ -1,12 +1,10 @@
-#include <stdatomic.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <type_traits>
-
-#include <aie_api/aie.hpp>
 
 #include "zero.h"
+#include <aie_api/aie.hpp>
+
 
 
 template <typename T, typename T_out, typename T_acc, unsigned m, unsigned k, unsigned r>
@@ -27,14 +25,14 @@ void matvec_vectorized_int8(T *__restrict a, T *__restrict b, T_out *__restrict 
     T_out *__restrict c_ptr = c; // reset to the first row of C output on
 
     for (int row = 0; row < m; row += r)
-    chess_prepare_for_pipelining chess_loop_range(2, ){
+    {
         aie::accum<T_acc, r> c_acc_in;
         c_acc_in.from_vector(aie::load_v<r>(c_ptr));
 
         a_ptr = a + 4 * row;
         b_ptr = b;
         for (int col = 0; col < k; col += 16) 
-        chess_flatten_loop {
+        {
             aie::vector<T, 16> b_vec = aie::load_v<16>(b_ptr);
 
             const aie::vector<T, 4 * r> a_vec_0 = aie::load_v<4 * r>(a_ptr);

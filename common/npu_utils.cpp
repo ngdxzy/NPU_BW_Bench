@@ -66,8 +66,23 @@ int npu_app::register_accel_app(accel_user_desc& user_desc){
 
 int npu_app::_load_instr_sequence(accel_user_desc& user_desc, accel_hw_desc& hw_desc){
     LOG_VERBOSE(2, "Loading instruction sequence: " << user_desc.instr_name);
-    std::ifstream instr_file(user_desc.instr_name);
+    std::ifstream instr_file(user_desc.instr_name, std::ios::binary);
     hw_desc.instr_name = user_desc.instr_name;
+#define INSTR_IN_BIN 1
+#if INSTR_IN_BIN
+    instr_file.seekg(0, std::ios::end);
+    size_t instr_size = instr_file.tellg();
+    instr_file.seekg(0, std::ios::beg);
+
+    if (instr_size % 4 != 0){
+        throw std::runtime_error("Instr file is invalied!");
+    }
+
+    std::vector<uint32_t> instr_v(instr_size / 4);
+    if (!instr_file.read(reinterpret_cast<char *>(instr_v.data()), instr_size)) {
+            throw std::runtime_error("Failed to read instruction file\n");
+    }
+#else
     std::string line;
     std::vector<uint32_t> instr_v;
     while (std::getline(instr_file, line)) {
@@ -78,6 +93,7 @@ int npu_app::_load_instr_sequence(accel_user_desc& user_desc, accel_hw_desc& hw_
         }
         instr_v.push_back(a);
     }
+#endif
     hw_desc.bo_instr = xrt::bo(this->device, instr_v.size() * sizeof(int), XCL_BO_FLAGS_CACHEABLE, hw_desc.kernel_desc->kernel.group_id(1));
     void *bufInstr = hw_desc.bo_instr.map<void *>();
     memcpy(bufInstr, instr_v.data(), instr_v.size() * sizeof(int));

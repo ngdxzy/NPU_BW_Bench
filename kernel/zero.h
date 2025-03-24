@@ -1,6 +1,6 @@
 #ifndef __ZERO_H__
 #define __ZERO_H__
-
+#define NOCPP
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>

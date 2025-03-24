@@ -8,7 +8,7 @@
 
 include makefiles/common.mk
 
-DEVICE ?= npu1
+DEVICE ?= npu2
 HOME_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
 # Kernel makefile
