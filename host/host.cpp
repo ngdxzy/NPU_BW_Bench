@@ -77,6 +77,7 @@ int main(int argc, const char *argv[]) {
     npu_instance.list_kernels();
 
     npu_instance.interperate_bd(0);
+    return 0;
     // npu_instance.interperate_bd(1); // They are the same
     
     vector w_0 = npu_instance.create_bo_vector<dtype_in>(W_VOLUME, 3, app_id_0);

@@ -43,6 +43,7 @@ class npu_sequence{
         std::vector<npu_cmd*> cmds;
         uint32_t npu_rows;
         uint32_t npu_cols;
+        uint32_t npu_dev_gen;
         uint32_t npu_mem_tile_rows;
         uint32_t npu_minor;
         uint32_t npu_major;

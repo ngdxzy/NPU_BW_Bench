@@ -12,6 +12,7 @@ NPU_UTILS_HEADERS = ${HOME_DIR}/common/npu_utils.hpp
 NPU_UTILS_HEADERS += ${HOME_DIR}/common/vector_view.hpp
 NPU_INSTR_UTILS_HEADERS += ${HOME_DIR}/common/debug_utils.hpp
 NPU_INSTR_UTILS_HEADERS += ${HOME_DIR}/common/npu_instr_utils.hpp
+NPU_INSTR_UTILS_HEADERS += ${wildcard ${HOME_DIR}/common/instr_utils/*.hpp}
 NPU_UTILS_OBJS = ${HOST_O_DIR}/npu_utils.o
 NPU_INSTR_UTILS_OBJS = ${HOST_O_DIR}/npu_instr_utils.o
 HOST_OBJS = $(patsubst $(HOST_SRCDIR)/%.cpp,$(HOST_O_DIR)/%.o,$(HOST_SRCS))
@@ -70,7 +71,7 @@ $(HOST_O_DIR)/npu_utils.o: $(NPU_UTILS_SRCS)
 	-@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o "$@" "$<"
 
-$(HOST_O_DIR)/npu_instr_utils.o: $(NPU_INSTR_UTILS_SRCS)
+$(HOST_O_DIR)/npu_instr_utils.o: $(NPU_INSTR_UTILS_SRCS) $(NPU_INSTR_UTILS_HEADERS)
 	-@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -o "$@" "$<"
 

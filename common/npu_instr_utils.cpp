@@ -38,6 +38,7 @@ void npu_sequence::parse_sequence(){
     // Parse the npu sequence
     this->npu_major = (this->npu_seq[0] >> dev_major_shift) & dev_major_mask;
     this->npu_minor = (this->npu_seq[0] >> dev_minor_shift) & dev_minor_mask;
+    this->npu_dev_gen = (this->npu_seq[0] >> dev_gen_shift) & dev_gen_mask;
     this->npu_rows = (this->npu_seq[0] >> dev_n_row_shift) & dev_n_row_mask;
     this->npu_cols = (this->npu_seq[1] >> dev_num_cols_shift) & dev_num_cols_mask;
     this->npu_mem_tile_rows = (this->npu_seq[1] >> dev_mem_tile_rows_shift) & dev_mem_tile_rows_mask;
@@ -51,6 +52,7 @@ void npu_sequence::parse_sequence(){
             cmd->dump_cmd(this->npu_seq.data() + i);
             this->cmds.push_back(cmd);
             i += cmd->get_op_lines();
+            LOG_VERBOSE(1, "DMA block write" << i);
         }
         else if (this->npu_seq[i] == op_headers::dma_ddr_patch_write){
             LOG_VERBOSE(1, "DMA DDR patch write");
@@ -91,6 +93,7 @@ void npu_sequence::print_sequence(){
     MSG_BONDLINE(INSTR_PRINT_WIDTH);
     instr_print(line_number, this->npu_seq[line_number], "NPU information");
     instr_print(-1, this->npu_seq[line_number], "--NPU version: " + std::to_string(this->npu_major) + "." + std::to_string(this->npu_minor));
+    instr_print(-1, this->npu_seq[line_number], "--NPU generation: " + std::to_string(this->npu_dev_gen));
     instr_print(-1, this->npu_seq[line_number], "--NPU rows: " + std::to_string(this->npu_rows));
     line_number++;
     instr_print(line_number, this->npu_seq[line_number], "--NPU cols: " + std::to_string(this->npu_cols));
@@ -117,7 +120,8 @@ void npu_sequence::to_npu(){
     npu_seq.push_back(
         (this->npu_major << dev_major_shift) |
         (this->npu_minor << dev_minor_shift) |
-        (this->npu_rows << dev_n_row_shift)  | 0x00030000
+        (this->npu_dev_gen << dev_gen_shift) |
+        (this->npu_rows << dev_n_row_shift)
     );
     
     npu_seq.push_back(
