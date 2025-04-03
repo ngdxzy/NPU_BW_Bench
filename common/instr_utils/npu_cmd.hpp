@@ -1,7 +1,7 @@
 #ifndef __NPU_CMD_HPP__
 #define __NPU_CMD_HPP__
 
-#include <cstdlib>
+#include <stdlib.h>
 #include <iostream>
 #include <string>
 #include <fstream>

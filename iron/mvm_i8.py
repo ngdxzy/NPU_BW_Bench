@@ -55,7 +55,6 @@ def my_matmul(arch: str = "npu2"):
                 "mv_int8",
                 inputs=[A_ty, inB_ty, C_ty],
             )
-
             # Tile declarations
             ShimTiles = []
             MemTiles = []
@@ -119,6 +118,7 @@ def my_matmul(arch: str = "npu2"):
             inB_fifo = object_fifo(f"inB", B_MemTile, core_list, 2, inB_ty)
             object_fifo_link(memB_fifo, inB_fifo)
 
+            rtp_buffer = buffer(cores[0][0], np.ndarray[(16, ), dtype_out], "rtp_buffer", use_write_rtp=True)
             # Set up compute tiles
             for col in range(mvm_cols):
                 for row in range(mvm_rows):
@@ -146,6 +146,7 @@ def my_matmul(arch: str = "npu2"):
             def sequence(A, B, C):
                 r = M // m // n_cores
                 assert r * m * n_cores == M
+                rtp_buffer[0] = 1
                 npu_dma_memcpy_nd(
                     metadata=memB_fifo,
                     bd_id=2,

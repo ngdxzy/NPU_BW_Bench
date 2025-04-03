@@ -70,7 +70,7 @@ void npu_sequence::parse_sequence(){
         }
         else if (this->npu_seq[i] == op_headers::queue_write){
             LOG_VERBOSE(1, "Queue write");
-            npu_cmd* cmd = new npu_queue_cmd();
+            npu_cmd* cmd = new npu_write_cmd();
             cmd->dump_cmd(&(this->npu_seq[i]));
             this->cmds.push_back(cmd);
             i += cmd->get_op_lines();

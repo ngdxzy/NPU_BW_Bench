@@ -13,7 +13,7 @@
 #include "debug_utils.hpp"
 #include "xrt/xrt_bo.h"
 #include "instr_utils/npu_cmd.hpp"
-#include "instr_utils/npu_cmd_queue_write.hpp"
+#include "instr_utils/npu_cmd_write.hpp"
 #include "instr_utils/npu_cmd_ddr.hpp"
 #include "instr_utils/npu_cmd_write_dma.hpp"
 #include "instr_utils/npu_cmd_issue_token.hpp"
