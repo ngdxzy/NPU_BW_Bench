@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <stdio.h>
-#include "vector_view.hpp"
+#include "buffer.hpp"
 #include "debug_utils.hpp"
 #include "xrt/xrt_bo.h"
 #include "instr_utils/npu_cmd.hpp"
@@ -39,7 +39,7 @@ class npu_sequence{
         void print_sequence(); // print the sequence
         void to_npu();
     private:
-        vector<uint32_t> npu_seq;
+        buffer<uint32_t> npu_seq;
         std::vector<npu_cmd*> cmds;
         uint32_t npu_rows;
         uint32_t npu_cols;

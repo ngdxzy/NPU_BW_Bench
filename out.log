@@ -28,185 +28,24 @@ Listing kernels: (Total: 2)
 Instruction 0: build/insts/mvm_i8.txt
 Instruction 1: build/insts/mvm_i8.txt.redundant
 Listing xclbins: (Total: 1)
-Xclbin 0 at address: 0x62a222562790
-+------------------------------------------------------------------------------+
-|    0 | 06040100 | NPU information                                            |
-|      |          | --NPU version: 0.1                                         |
-|      |          | --NPU generation: 4                                        |
-|      |          | --NPU rows: 6                                              |
-|    1 | 00000108 | --NPU cols: 8                                              |
-|      |          | --NPU memory tile rows: 1                                  |
-|    2 | 0000000c | Instruction commands: 12                                   |
-|    3 | 000001bc | Instruction lines: 111                                     |
-+------------------------------------------------------------------------------+
-|    4 | 00000000 | Queue write, OP count: 0                                   |
-|    5 | 00000000 | Useless                                                    |
-|    6 | 0020c280 | RTP write                                                  |
-|      |          | --Location: (row: 2, col: 0)                               |
-|      |          | --Register address: 49792                                  |
-|    7 | 00000000 | Useless                                                    |
-|    8 | 00000001 | Value: 1                                                   |
-|    9 | 00000018 | OP size: 6                                                 |
-+------------------------------------------------------------------------------+
-|   10 | 00000001 | DMA block write, OP count: 1                               |
-|   11 | 00000000 | Useless                                                    |
-|   12 | 0001d040 | --Location: (row: 0, col: 0)                               |
-|      |          | --BD ID: 2                                                 |
-|   13 | 00000030 | Operation size: 12                                         |
-|   14 | 00000080 | --Buffer length: 128                                       |
-|   15 | 00000000 | --Buffer offset: 0                                         |
-|   16 | 00000000 | Packet disabled                                            |
-|   17 | 00000000 | A linear transfer, no D0                                   |
-|   18 | c0000000 | --No D1                                                    |
-|   19 | 00000000 | --No D2                                                    |
-|   20 | 00000000 | --Iteration size: 1                                        |
-|      |          | --Iteration stride: 1                                      |
-|   21 | 02000000 | --Next BD ID: 0                                            |
-|      |          | --Valid BD: 1                                              |
-|      |          | --Lock relative value: 128                                 |
-|      |          | --Lock relative id: 0                                      |
-|      |          | --Lock acquire enable: 0                                   |
-|      |          | --Lock acquire value: 0                                    |
-|      |          | --Lock acquire id: 0                                       |
-+------------------------------------------------------------------------------+
-|   22 | 00000081 | DDR patch, OP count: 2                                     |
-|   23 | 00000030 | Operation size: 12                                         |
-|   24 | 00000000 | Useless                                                    |
-|   25 | 00000000 | Useless                                                    |
-|   26 | 00000000 | Useless                                                    |
-|   27 | 00000000 | Useless                                                    |
-|   28 | 0001d044 | BD register address                                        |
-|      |          | --Location: (row: 0, col: 0)                               |
-|      |          | --BD ID: 2                                                 |
-|   29 | 00000000 | Useless                                                    |
-|   30 | 00000001 | Argument index: 1                                          |
-|   31 | 00000000 | Useless                                                    |
-|   32 | 00000000 | Argument offset (Bytes): 0                                 |
-|   33 | 00000000 | Useless                                                    |
-+------------------------------------------------------------------------------+
-|   34 | 00000000 | Queue write, OP count: 3                                   |
-|   35 | 00000000 | Useless                                                    |
-|   36 | 0001d21c | --MM2S                                                     |
-|      |          | --Location: (row: 0, col: 0)                               |
-|      |          | --Register address: 119324                                 |
-|      |          | --Channel: 1                                               |
-|   37 | 00000000 | Useless                                                    |
-|   38 | 00030002 | --Repeat count: 3                                          |
-|      |          | --Issue token: 0                                           |
-|      |          | --BD ID: 2                                                 |
-|   39 | 00000018 | OP size: 6                                                 |
-+------------------------------------------------------------------------------+
-|   40 | 00000001 | DMA block write, OP count: 4                               |
-|   41 | 00000000 | Useless                                                    |
-|   42 | 0001d020 | --Location: (row: 0, col: 0)                               |
-|      |          | --BD ID: 1                                                 |
-|   43 | 00000030 | Operation size: 12                                         |
-|   44 | 00004000 | --Buffer length: 16K                                       |
-|   45 | 00000000 | --Buffer offset: 0                                         |
-|   46 | 00000000 | Packet disabled                                            |
-|   47 | 02000000 | --D0 size, stride: 32, 1                                   |
-|   48 | c800007f | --D1 size, stride: 128, 128                                |
-|   49 | 0000001f | --D2 stride: 32                                            |
-|      |          | --Inferred D2 size: 4                                      |
-|   50 | 00303fff | --Iteration size: 4                                        |
-|      |          | --Iteration stride: 16K                                    |
-|   51 | 02000000 | --Next BD ID: 0                                            |
-|      |          | --Valid BD: 1                                              |
-|      |          | --Lock relative value: 128                                 |
-|      |          | --Lock relative id: 0                                      |
-|      |          | --Lock acquire enable: 0                                   |
-|      |          | --Lock acquire value: 0                                    |
-|      |          | --Lock acquire id: 0                                       |
-+------------------------------------------------------------------------------+
-|   52 | 00000081 | DDR patch, OP count: 5                                     |
-|   53 | 00000030 | Operation size: 12                                         |
-|   54 | 00000000 | Useless                                                    |
-|   55 | 00000000 | Useless                                                    |
-|   56 | 00000000 | Useless                                                    |
-|   57 | 00000000 | Useless                                                    |
-|   58 | 0001d024 | BD register address                                        |
-|      |          | --Location: (row: 0, col: 0)                               |
-|      |          | --BD ID: 1                                                 |
-|   59 | 00000000 | Useless                                                    |
-|   60 | 00000000 | Argument index: 0                                          |
-|   61 | 00000000 | Useless                                                    |
-|   62 | 00000000 | Argument offset (Bytes): 0                                 |
-|   63 | 00000000 | Useless                                                    |
-+------------------------------------------------------------------------------+
-|   64 | 00000000 | Queue write, OP count: 6                                   |
-|   65 | 00000000 | Useless                                                    |
-|   66 | 0001d214 | --MM2S                                                     |
-|      |          | --Location: (row: 0, col: 0)                               |
-|      |          | --Register address: 119316                                 |
-|      |          | --Channel: 0                                               |
-|   67 | 00000000 | Useless                                                    |
-|   68 | 00030001 | --Repeat count: 3                                          |
-|      |          | --Issue token: 0                                           |
-|      |          | --BD ID: 1                                                 |
-|   69 | 00000018 | OP size: 6                                                 |
-+------------------------------------------------------------------------------+
-|   70 | 00000001 | DMA block write, OP count: 7                               |
-|   71 | 00000000 | Useless                                                    |
-|   72 | 0001d000 | --Location: (row: 0, col: 0)                               |
-|      |          | --BD ID: 0                                                 |
-|   73 | 00000030 | Operation size: 12                                         |
-|   74 | 00000200 | --Buffer length: 512                                       |
-|   75 | 00000000 | --Buffer offset: 0                                         |
-|   76 | 00000000 | Packet disabled                                            |
-|   77 | 08000000 | --D0 size, stride: 128, 1                                  |
-|   78 | c040007f | --D1 size, stride: 4, 128                                  |
-|   79 | 00000000 | --D2 stride: 1                                             |
-|      |          | --Inferred D2 size: 1                                      |
-|   80 | 00000000 | --Iteration size: 1                                        |
-|      |          | --Iteration stride: 1                                      |
-|   81 | 02000000 | --Next BD ID: 0                                            |
-|      |          | --Valid BD: 1                                              |
-|      |          | --Lock relative value: 128                                 |
-|      |          | --Lock relative id: 0                                      |
-|      |          | --Lock acquire enable: 0                                   |
-|      |          | --Lock acquire value: 0                                    |
-|      |          | --Lock acquire id: 0                                       |
-+------------------------------------------------------------------------------+
-|   82 | 00000081 | DDR patch, OP count: 8                                     |
-|   83 | 00000030 | Operation size: 12                                         |
-|   84 | 00000000 | Useless                                                    |
-|   85 | 00000000 | Useless                                                    |
-|   86 | 00000000 | Useless                                                    |
-|   87 | 00000000 | Useless                                                    |
-|   88 | 0001d004 | BD register address                                        |
-|      |          | --Location: (row: 0, col: 0)                               |
-|      |          | --BD ID: 0                                                 |
-|   89 | 00000000 | Useless                                                    |
-|   90 | 00000002 | Argument index: 2                                          |
-|   91 | 00000000 | Useless                                                    |
-|   92 | 00000000 | Argument offset (Bytes): 0                                 |
-|   93 | 00000000 | Useless                                                    |
-+------------------------------------------------------------------------------+
-|   94 | 00000003 | Issue token, OP count: 9                                   |
-|   95 | 00000000 | Useless                                                    |
-|   96 | 0001d200 | --S2MM                                                     |
-|      |          | --Location: (row: 0, col: 0)                               |
-|      |          | --Channel: 0                                               |
-|   97 | 00000000 | Always 0                                                   |
-|   98 | 00000f00 | Controller packet ID: 15                                   |
-|   99 | 00000f00 | Mask                                                       |
-|  100 | 0000001c | OP size: 7                                                 |
-+------------------------------------------------------------------------------+
-|  101 | 00000000 | Queue write, OP count: 10                                  |
-|  102 | 00000000 | Useless                                                    |
-|  103 | 0001d204 | --S2MM                                                     |
-|      |          | --Location: (row: 0, col: 0)                               |
-|      |          | --Register address: 119300                                 |
-|      |          | --Channel: 0                                               |
-|  104 | 00000000 | Useless                                                    |
-|  105 | 80000000 | --Repeat count: 0                                          |
-|      |          | --Issue token: 1                                           |
-|      |          | --BD ID: 0                                                 |
-|  106 | 00000018 | OP size: 6                                                 |
-+------------------------------------------------------------------------------+
-|  107 | 00000080 | Wait sync, OP count: 11                                    |
-|  108 | 00000010 | --Operation size: 16                                       |
-|  109 | 00000000 | --Location: (row: 0, col: 0)                               |
-|      |          | --S2MM                                                     |
-|  110 | 00010100 | --Channel: 0                                               |
-+------------------------------------------------------------------------------+
+Xclbin 0 at address: 0x637da5067790
+[info]  w: is owner? 1
+[info]  w: is bo owner? 0
+[info]  w[0] = 0
+[info]  w[10] = 10
+[info]  w[20] = 20
+[info]  w[30] = 30
+[info]  w[40] = 40
+[info]  w[50] = 50
+[info]  w[60] = 60
+[info]  w[70] = 70
+[info]  w[80] = 80
+[info]  w[90] = 90
+[info]  u8_buffer: is owner? 1
+[info]  u8_buffer: is bo owner? 0
+[info]  u32_buffer: is owner? 0
+[info]  u32_buffer: is bo owner? 0
+[info]  u32_buffer[0] = 50462976
+[info]  u32_buffer[1] = 117835012
+[info]  u32_buffer[2] = 185207048
+[info]  u32_buffer[3] = 252579084

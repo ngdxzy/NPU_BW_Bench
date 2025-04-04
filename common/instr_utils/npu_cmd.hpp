@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <stdio.h>
-#include "vector_view.hpp"
+#include "buffer.hpp"
 #include "debug_utils.hpp"
 #include "xrt/xrt_bo.h"
 

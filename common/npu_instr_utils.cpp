@@ -2,7 +2,7 @@
 
 
 npu_sequence::npu_sequence(std::vector<uint32_t>& npu_seq){
-    this->npu_seq.acquire(npu_seq.size());
+    this->npu_seq.resize(npu_seq.size());
     this->npu_seq.copy_from(npu_seq);
 
     // Parse the npu sequence
@@ -10,7 +10,7 @@ npu_sequence::npu_sequence(std::vector<uint32_t>& npu_seq){
 }
 
 npu_sequence::npu_sequence(xrt::bo& bo){
-    this->npu_seq = vector<uint32_t>(bo);
+    this->npu_seq = buffer<uint32_t>(bo);
 
     // Parse the npu sequence
     this->parse_sequence();
@@ -23,7 +23,7 @@ npu_sequence::npu_sequence(std::string filename){
     while (std::getline(file, line)){
         npu_seq.push_back(std::stoi(line));
     }
-    this->npu_seq.acquire(npu_seq.size());
+    this->npu_seq.resize(npu_seq.size());
     this->npu_seq.copy_from(npu_seq);
 
     // Parse the npu sequence   

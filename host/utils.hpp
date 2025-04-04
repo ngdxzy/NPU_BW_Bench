@@ -118,7 +118,7 @@ void check_arg_file_exists(std::string name) {
 }
 
 template <typename T>
-int compare_vectors(vector<T>& y, vector<T>& y_ref, int print_errors = 16){
+int compare_vectors(buffer<T>& y, buffer<T>& y_ref, int print_errors = 16){
     int total_errors = 0;
     for (int i = 0; i < y.size(); i++){
         if (y[i] != y_ref[i]){

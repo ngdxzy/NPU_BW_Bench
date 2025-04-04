@@ -20,14 +20,15 @@
 
 namespace po = boost::program_options;
 
-void callback_0(const void *data, ert_cmd_state state, void *user_data) {
-    header_print("info", "Run 0 completed");
-}
-void callback_1(const void *data, ert_cmd_state state, void *user_data) {
-    header_print("info", "Run 1 completed");
+buffer<float> test_func(){
+    buffer<float> w(100);
+    for (int i = 0; i < 100; i++){
+        w[i] = i;
+    }
+    return w;
 }
 
-void linear(vector<dtype_out>& y, vector<dtype_in>& w, vector<dtype_in>& x);
+void linear(buffer<dtype_out>& y, buffer<dtype_in>& w, buffer<dtype_in>& x);
 
 int main(int argc, const char *argv[]) {
     // Fix the seed to ensure reproducibility in CI.
@@ -75,18 +76,46 @@ int main(int argc, const char *argv[]) {
 
     npu_instance.print_npu_info();
     npu_instance.list_kernels();
+    buffer<float> w = test_func();
+    header_print("info", "w: is owner? " << w.is_owner());
+    header_print("info", "w: is bo owner? " << w.is_bo_owner());
+    for (int i = 0; i < 100; i += 10){
+        header_print("info", "w[" << i << "] = " << w[i]);
+    }
 
-    npu_instance.interperate_bd(0);
+    buffer<uint8_t> u8_buffer(16);
+    for (int i = 0; i < 16; i++){
+        u8_buffer[i] = i;
+    }
+    header_print("info", "u8_buffer: is owner? " << u8_buffer.is_owner());
+    header_print("info", "u8_buffer: is bo owner? " << u8_buffer.is_bo_owner());
+    
+    buffer<uint32_t> u32_buffer = u8_buffer.cast_to<uint32_t>();
+    header_print("info", "u32_buffer: is owner? " << u32_buffer.is_owner());
+    header_print("info", "u32_buffer: is bo owner? " << u32_buffer.is_bo_owner());
+    for (int i = 0; i < 4; i++){
+        header_print("info", "u32_buffer[" << i << "] = " << u32_buffer[i]);
+    }
+    
     return 0;
+    npu_instance.interperate_bd(0);
+    // return 0;
     // npu_instance.interperate_bd(1); // They are the same
     
-    vector w_0 = npu_instance.create_bo_vector<dtype_in>(W_VOLUME, 3, app_id_0);
-    vector x_0 = npu_instance.create_bo_vector<dtype_in>(X_VOLUME, 4, app_id_0);
-    vector y_0 = npu_instance.create_bo_vector<dtype_out>(Y_VOLUME, 5, app_id_0);
+    buffer<dtype_in> w_0 = npu_instance.create_bo_buffer<dtype_in>(W_VOLUME, 3, app_id_0);
+    buffer<dtype_in> x_0 = npu_instance.create_bo_buffer<dtype_in>(X_VOLUME, 4, app_id_0);
+    buffer<dtype_out> y_0 = npu_instance.create_bo_buffer<dtype_out>(Y_VOLUME, 5, app_id_0);
 
-    vector w_1 = npu_instance.create_bo_vector<dtype_in>(W_VOLUME, 3, app_id_1);
-    vector x_1 = npu_instance.create_bo_vector<dtype_in>(X_VOLUME, 4, app_id_1);
-    vector y_1 = npu_instance.create_bo_vector<dtype_out>(Y_VOLUME, 5, app_id_1);
+    buffer<dtype_in> w_1 = npu_instance.create_bo_buffer<dtype_in>(W_VOLUME, 3, app_id_1);
+    buffer<dtype_in> x_1 = npu_instance.create_bo_buffer<dtype_in>(X_VOLUME, 4, app_id_1);
+    buffer<dtype_out> y_1 = npu_instance.create_bo_buffer<dtype_out>(Y_VOLUME, 5, app_id_1);
+
+    header_print("info", "w_0: is owner? " << w_0.is_owner());
+    header_print("info", "x_0: is owner? " << x_0.is_owner());
+    header_print("info", "y_0: is owner? " << y_0.is_owner());
+    header_print("info", "w_0: is bo owner? " << w_0.is_bo_owner());
+    header_print("info", "x_0: is bo owner? " << x_0.is_bo_owner());
+    header_print("info", "y_0: is bo owner? " << y_0.is_bo_owner());
 
     for (int i = 0; i < W_VOLUME; i++){
         w_0[i] = utils::getRandInt(-10, 10);
@@ -99,8 +128,8 @@ int main(int argc, const char *argv[]) {
     }
  
     header_print("info", "Calculate reference for " << M << "x" << K << "x" << N);
-    vector<dtype_out> y_ref_0(Y_VOLUME);    
-    vector<dtype_out> y_ref_1(Y_VOLUME);    
+    buffer<dtype_out> y_ref_0(Y_VOLUME);    
+    buffer<dtype_out> y_ref_1(Y_VOLUME);    
     linear(y_ref_0, w_0, x_0);
     linear(y_ref_1, w_1, x_1);
 
@@ -178,7 +207,7 @@ int main(int argc, const char *argv[]) {
     return 0;
 }
 
-void linear(vector<dtype_out>& y, vector<dtype_in>& w, vector<dtype_in>& x){
+void linear(buffer<dtype_out>& y, buffer<dtype_in>& w, buffer<dtype_in>& x){
     int in_features = x.size();
     int out_features = y.size();
     assert((in_features * out_features) == w.size());

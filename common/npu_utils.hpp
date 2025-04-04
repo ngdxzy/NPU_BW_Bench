@@ -26,7 +26,7 @@
 #include "xrt/xrt_device.h"
 #include "xrt/xrt_kernel.h"
 #include "amdxdna_accel.h"
-#include "vector_view.hpp"
+#include "buffer.hpp"
 #include "debug_utils.hpp"
 #include "experimental/xrt_kernel.h"
 #include "experimental/xrt_ext.h"
@@ -102,8 +102,9 @@ public:
     int _load_instr_sequence(accel_user_desc& user_desc, accel_hw_desc& hw_desc);
     int _load_xclbin(std::string xclbin_name);
     xrt::bo create_buffer(size_t size, int group_id, int app_id);
+
     template<typename T>
-    vector<T> create_bo_vector(size_t size, int group_id, int app_id);
+    buffer<T> create_bo_buffer(size_t size, int group_id, int app_id);
 
     ert_cmd_state run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, xrt::bo& Out1, int app_id = 0);
     ert_cmd_state run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, int app_id = 0);

@@ -135,16 +135,16 @@ xrt::bo npu_app::create_buffer(size_t size, int group_id, int app_id){
 }
 
 template<typename T>
-vector<T> npu_app::create_bo_vector(size_t size, int group_id, int app_id){
-    LOG_VERBOSE(2, "Creating buffer vector with size: " << size << " and group_id: " << group_id << " and app_id: " << app_id);
-    return vector<T>(size, this->device, this->hw_descs[app_id].kernel_desc->kernel, group_id);
+buffer<T> npu_app::create_bo_buffer(size_t size, int group_id, int app_id){
+    LOG_VERBOSE(2, "Creating buffer buffer with size: " << size << " and group_id: " << group_id << " and app_id: " << app_id);
+    return buffer<T>(size, this->device, this->hw_descs[app_id].kernel_desc->kernel, group_id);
 }
 
-template vector<float> npu_app::create_bo_vector<float>(size_t size, int group_id, int app_id);
-template vector<uint32_t> npu_app::create_bo_vector<uint32_t>(size_t size, int group_id, int app_id);
-template vector<int32_t> npu_app::create_bo_vector<int32_t>(size_t size, int group_id, int app_id);
-template vector<int8_t> npu_app::create_bo_vector<int8_t>(size_t size, int group_id, int app_id);
-template vector<std::bfloat16_t> npu_app::create_bo_vector<std::bfloat16_t>(size_t size, int group_id, int app_id);
+template buffer<float> npu_app::create_bo_buffer<float>(size_t size, int group_id, int app_id);
+template buffer<uint32_t> npu_app::create_bo_buffer<uint32_t>(size_t size, int group_id, int app_id);
+template buffer<int32_t> npu_app::create_bo_buffer<int32_t>(size_t size, int group_id, int app_id);
+template buffer<int8_t> npu_app::create_bo_buffer<int8_t>(size_t size, int group_id, int app_id);
+template buffer<std::bfloat16_t> npu_app::create_bo_buffer<std::bfloat16_t>(size_t size, int group_id, int app_id);
 
 ert_cmd_state npu_app::run(xrt::bo& In0, xrt::bo& In1, xrt::bo& Out0, xrt::bo& Out1, int app_id){
     unsigned int opcode = 3;
