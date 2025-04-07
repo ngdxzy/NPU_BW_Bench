@@ -120,7 +120,13 @@ int npu_app::_load_xclbin(std::string xclbin_name){
     );
     this->device.register_xclbin(this->kernel_descs[this->kernel_desc_count].xclbin);
     auto kernelName = xkernel.get_name();
-    this->kernel_descs[this->kernel_desc_count].context = xrt::hw_context(this->device, this->kernel_descs[this->kernel_desc_count].xclbin.get_uuid());
+    std::map<std::string, uint32_t> qos_map = {
+        {"gops", 100000},
+        {"dma_bandwidth", 180},
+        {"priority", AMDXDNA_QOS_HIGH_PRIORITY}
+    };
+    this->kernel_descs[this->kernel_desc_count].context = xrt::hw_context(this->device, this->kernel_descs[this->kernel_desc_count].xclbin.get_uuid(), qos_map);
+    this->kernel_descs[this->kernel_desc_count].context;
     this->kernel_descs[this->kernel_desc_count].kernel = xrt::kernel(this->kernel_descs[this->kernel_desc_count].context, kernelName);
     LOG_VERBOSE(2, "Xclbin: " << xclbin_name << " loaded successfully!");
     return 0;
@@ -329,7 +335,6 @@ float npu_app::get_npu_power(bool print){
     close(fd);
     return (float)query_sensor.input * pow(10, query_sensor.unitm);
 }
-
 
 void npu_app::interperate_bd(int app_id){
     // sync from the device to be consistent

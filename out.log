@@ -1,4 +1,3 @@
-[info]  Matrix size 512x512x1
 +--------------------------------------+
 | NPU version: 1.1                     |
 | MP-NPU clock frequency: 1267 MHz     |
@@ -24,28 +23,13 @@
 | --Lock count: 16                     |
 | --Event reg count: 4                 |
 +--------------------------------------+
-Listing kernels: (Total: 2)
-Instruction 0: build/insts/mvm_i8.txt
-Instruction 1: build/insts/mvm_i8.txt.redundant
+Listing kernels: (Total: 1)
+Instruction 0: build/insts/bwbench.txt
 Listing xclbins: (Total: 1)
-Xclbin 0 at address: 0x637da5067790
-[info]  w: is owner? 1
-[info]  w: is bo owner? 0
-[info]  w[0] = 0
-[info]  w[10] = 10
-[info]  w[20] = 20
-[info]  w[30] = 30
-[info]  w[40] = 40
-[info]  w[50] = 50
-[info]  w[60] = 60
-[info]  w[70] = 70
-[info]  w[80] = 80
-[info]  w[90] = 90
-[info]  u8_buffer: is owner? 1
-[info]  u8_buffer: is bo owner? 0
-[info]  u32_buffer: is owner? 0
-[info]  u32_buffer: is bo owner? 0
-[info]  u32_buffer[0] = 50462976
-[info]  u32_buffer[1] = 117835012
-[info]  u32_buffer[2] = 185207048
-[info]  u32_buffer[3] = 252579084
+Xclbin 0 at address: 0x63f735677c80
+[info]  Running runtime test.
+[info]  Running kernel with bare call.
+[info]  Finished running kernel
++--------------------------------------+
+| NPU time with bare call: 738 us      |
++--------------------------------------+

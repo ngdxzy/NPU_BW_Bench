@@ -10,16 +10,10 @@ include makefiles/common.mk
 
 DEVICE ?= npu2
 HOME_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-
-# Kernel makefile
-include makefiles/kernel.mk
-
 # Bitstream makefile
 include makefiles/bitstream.mk
 include makefiles/mlir_bitstream.mk
 
-# This is a copy of the instruction just for debugging purposes
-INSTR_REDUDENT_TARGETS := $(patsubst ${BITSTREAM_O_DIR}/from_iron/%.txt, ${HOME_DIR}/build/insts/%.txt.redundant, ${IRON_BOTH_INSTS_TARGET})
 
 # Host makefile
 include makefiles/host.mk
@@ -38,10 +32,7 @@ test:
 	echo ${AIEOPT_DIR}
 
 
-kernel: ${KERNEL_OBJS}
-
-
-instructions: ${INSTS_TARGETS} ${INSTR_REDUDENT_TARGETS}
+instructions: ${INSTS_TARGETS}
 
 
 link: ${MLIR_TARGET} 
@@ -56,8 +47,6 @@ host: ${HOST_C_TARGET}
 clean_host:
 	-@rm -rf build/host
 
-${HOME_DIR}/build/insts/%.txt.redundant: ${BITSTREAM_O_DIR}/from_iron/%.txt
-	cp $< $@
 
-run: ${HOST_C_TARGET} ${XCLBIN_TARGET} ${INSTS_TARGET} ${INSTR_REDUDENT_TARGETS}
+run: ${HOST_C_TARGET} ${XCLBIN_TARGET} ${INSTS_TARGET}
 	./${HOST_C_TARGET} | tee out.log

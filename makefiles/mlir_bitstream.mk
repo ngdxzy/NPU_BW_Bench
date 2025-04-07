@@ -9,9 +9,8 @@ MLIR_BOTH_XCLBIN_TARGET := $(patsubst ${HOME_DIR}/mlir/%.mlir, ${BITSTREAM_O_DIR
 MLIR_BOTH_INSTS_TARGET := $(patsubst ${HOME_DIR}/mlir/%.mlir, ${BITSTREAM_O_DIR}/from_mlir/%.txt, ${MLIR_BOTH_SRC})
 
 # Build xclbin
-${BITSTREAM_O_DIR}/from_mlir/%.xclbin: ${HOME_DIR}/mlir/%.mlir ${KERNEL_OBJS}
+${BITSTREAM_O_DIR}/from_mlir/%.xclbin: ${HOME_DIR}/mlir/%.mlir
 	mkdir -p ${@D}
-	cp ${KERNEL_OBJS} ${@D}
 	cd ${@D} && aiecc.py --aie-generate-cdo --aie-generate-xclbin --no-compile-host \
 		--xclbin-name=${@F} $(<:${HOME_DIR}/mlir/%=../../../mlir/%)
 	mkdir -p build/xclbins

@@ -18,9 +18,8 @@ ${MLIR_O_DIR}/%.mlir: ${HOME_DIR}/iron/%.py
 	python3 $< ${DEVICE} > $@
 
 # Build xclbin
-${BITSTREAM_O_DIR}/from_iron/%.xclbin: ${MLIR_O_DIR}/%.mlir ${KERNEL_OBJS}
+${BITSTREAM_O_DIR}/from_iron/%.xclbin: ${MLIR_O_DIR}/%.mlir
 	mkdir -p ${@D}
-	cp ${KERNEL_OBJS} ${@D}
 	cd ${@D} && aiecc.py --no-xchesscc --no-xbridge \
 		--aie-generate-cdo --aie-generate-xclbin --no-compile-host \
 		--xclbin-name=${@F} $(<:${MLIR_O_DIR}/%=../../mlir/%)
