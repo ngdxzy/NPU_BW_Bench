@@ -15,7 +15,7 @@ IRON_BOTH_INSTS_TARGET := $(patsubst ${HOME_DIR}/iron/%.py, ${BITSTREAM_O_DIR}/f
 # iron generate mlir
 ${MLIR_O_DIR}/%.mlir: ${HOME_DIR}/iron/%.py
 	mkdir -p ${@D}
-	python3 $< ${DEVICE} > $@
+	python3 $<  > $@
 
 # Build xclbin
 ${BITSTREAM_O_DIR}/from_iron/%.xclbin: ${MLIR_O_DIR}/%.mlir

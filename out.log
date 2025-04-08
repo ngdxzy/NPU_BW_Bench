@@ -26,10 +26,10 @@
 Listing kernels: (Total: 1)
 Instruction 0: build/insts/bwbench.txt
 Listing xclbins: (Total: 1)
-Xclbin 0 at address: 0x63f735677c80
+Xclbin 0 at address: 0x64ad031e4c80
 [info]  Running runtime test.
 [info]  Running kernel with bare call.
 [info]  Finished running kernel
 +--------------------------------------+
-| NPU time with bare call: 738 us      |
+| NPU time with bare call: 723 us      |
 +--------------------------------------+
